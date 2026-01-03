@@ -1,26 +1,176 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Love Theme Palette */
+  --bg-primary: #FFF0F5;
+  /* Lavender Blush */
+  --bg-secondary: #FFE4E1;
+  /* Misty Rose */
+  --bg-card: #FFFFFF;
+
+  --text-primary: #881337;
+  /* Rose-900 */
+  --text-secondary: #be123c;
+  /* Rose-700 */
+  --text-muted: #fb7185;
+  /* Rose-400 */
+
+  --border: #fecdd3;
+  /* Rose-200 */
+  --border-strong: #fb7185;
+  /* Rose-400 */
+
+  --accent: #e11d48;
+  /* Rose-600 */
+
+  /* Status Colors */
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-error: #ef4444;
+
+  /* Shadows - Soft & Glowy */
+  --shadow-sm: 0 2px 4px rgba(251, 113, 133, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(251, 113, 133, 0.2), 0 2px 4px -1px rgba(251, 113, 133, 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-card: var(--bg-card);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+/* Love Theme Utility Classes (keeping names for compatibility) */
+
+.report-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  /* Softer corners */
+  padding: 1.5rem;
+  position: relative;
+  box-shadow: var(--shadow-md);
+}
+
+
+
+.clinical-input {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--border);
+  border-radius: 0;
+  padding: 0.5rem 0;
+  width: 100%;
+  font-family: var(--font-sans);
+  /* Less clinical */
+  transition: border-color 0.2s ease;
+  color: var(--text-primary);
+}
+
+.clinical-input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.diagnostic-bar {
+  height: 12px;
+  background: var(--bg-secondary);
+  border-radius: 999px;
+  /* Rounded */
+  position: relative;
+  overflow: hidden;
+  border: none;
+}
+
+.diagnostic-bar-fill {
+  height: 100%;
+  background: linear-gradient(to right, #fb7185, #e11d48);
+  border-radius: 999px;
+}
+
+/* Typography Overrides */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.font-mono-code {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  letter-spacing: -0.02em;
+}
+
+/* Button Overrides for Love Theme */
+.btn-clinical {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 999px;
+  /* Pill shape */
+  text-transform: none;
+  /* Normal case */
+  letter-spacing: 0.02em;
+  background: var(--accent);
+  color: white;
+  border: 1px solid var(--accent);
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-clinical:hover {
+  background: #be123c;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(225, 29, 72, 0.3);
+}
+
+.btn-clinical-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  background: transparent;
+  color: var(--text-primary);
+  border: 2px solid var(--border-strong);
+  transition: all 0.2s ease;
+}
+
+.btn-clinical-outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg-secondary);
 }
