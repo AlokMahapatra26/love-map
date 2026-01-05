@@ -18,8 +18,8 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Clinical Attachment Assessment | Protocol A-1",
-  description: "Professional diagnostic tool for relationship attachment styles. Based on ECR-R methodology.",
+  title: "LoveMap | Relationship Compatibility",
+  description: "Discover your relationship patterns and build a stronger connection.",
 };
 
 export default function RootLayout({

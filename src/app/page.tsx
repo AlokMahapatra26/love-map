@@ -85,20 +85,20 @@ export default function HomePage() {
           {[
             {
               step: '01',
-              title: 'Intake',
-              desc: 'Complete the 20-item inventory regarding your emotional responses in close relationships.',
+              title: 'Take the Quiz',
+              desc: 'Answer 20 questions about how you feel and react in relationships.',
               icon: ClipboardCheck
             },
             {
               step: '02',
-              title: 'Analysis',
-              desc: 'Algorithmic processing of anxiety and avoidance dimensions to determine attachment classification.',
+              title: 'Get Analyzed',
+              desc: 'We calculate your unique attachment style based on your answers.',
               icon: Scale
             },
             {
               step: '03',
-              title: 'Report',
-              desc: 'Receive a detailed psychometric profile with actionable clinical recommendations.',
+              title: 'See Your Map',
+              desc: 'Get a personalized guide to understanding yourself and your partner.',
               icon: FileText
             }
           ].map((item, i) => (

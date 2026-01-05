@@ -158,7 +158,7 @@ function ResultsContent() {
                     </div>
                     <h1 className="text-xl font-serif font-bold mb-4 text-rose-900">No Diagnostic Data</h1>
                     <p className="mb-8 text-stone-600 font-mono text-sm">
-                        Please complete the initial assessment protocol.
+                        Please complete the initial assessment.
                     </p>
                     <Link href="/questionnaire" className="btn-clinical">
                         Begin Assessment <ArrowRight className="w-4 h-4" />
@@ -293,7 +293,7 @@ function ResultsContent() {
                     <div className="w-8 h-8 bg-rose-600 flex items-center justify-center text-white rounded-full">
                         <Brain className="w-4 h-4" />
                     </div>
-                    <span className="font-serif font-bold text-lg text-rose-900">Diagnostic Report</span>
+                    <span className="font-serif font-bold text-lg text-rose-900">LoveMap Report</span>
                 </div>
                 <div className="flex items-center gap-4">
                     {partner1 && (
@@ -539,7 +539,7 @@ export default function ResultsPage() {
         <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center bg-[#FFF0F5]">
                 <div className="text-center font-mono text-xs animate-pulse text-rose-400">
-                    INITIALIZING DIAGNOSTIC ENGINE...
+                    GENERATING LOVEMAP...
                 </div>
             </div>
         }>

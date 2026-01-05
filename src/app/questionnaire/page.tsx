@@ -128,8 +128,8 @@ function QuestionnaireContent() {
                     >
                         <div className="report-card mb-8 bg-white border-rose-100 shadow-lg">
                             <div className="border-b border-rose-100 pb-4 mb-6 flex justify-between items-center">
-                                <h1 className="text-xl font-serif font-bold text-rose-900">Assessment Protocol: Introduction</h1>
-                                <span className="text-xs font-mono text-rose-400">FORM A-1</span>
+                                <h1 className="text-xl font-serif font-bold text-rose-900">LoveMap Assessment: Introduction</h1>
+                                <span className="text-xs font-mono text-rose-400">LOVEMAP</span>
                             </div>
 
                             <p className="text-stone-600 mb-6 leading-relaxed font-serif">
@@ -409,7 +409,7 @@ function QuestionnaireContent() {
                     <div className="w-8 h-8 bg-rose-600 flex items-center justify-center text-white rounded-full">
                         <Brain className="w-4 h-4" />
                     </div>
-                    <span className="font-serif font-bold text-rose-900">Protocol A-1</span>
+                    <span className="font-serif font-bold text-rose-900">LoveMap</span>
                 </div>
                 <div className="text-xs font-mono text-rose-400">
                     {currentDate}
