@@ -1,6 +1,10 @@
 import { AttachmentStyle } from './attachment-styles';
 
-export type PairingKey = `${AttachmentStyle}-${AttachmentStyle}`;
+export type PairingKey =
+    | 'secure-secure' | 'secure-anxious' | 'secure-avoidant' | 'secure-disorganized'
+    | 'anxious-anxious' | 'anxious-avoidant' | 'anxious-disorganized'
+    | 'avoidant-avoidant' | 'avoidant-disorganized'
+    | 'disorganized-disorganized';
 
 export interface PairingAnalysis {
     stability: number; // 1-5
@@ -34,9 +38,9 @@ export function getPairingKey(style1: AttachmentStyle, style2: AttachmentStyle):
     const idx2 = order.indexOf(style2);
 
     if (idx1 <= idx2) {
-        return `${style1}-${style2}`;
+        return `${style1}-${style2}` as PairingKey;
     }
-    return `${style2}-${style1}`;
+    return `${style2}-${style1}` as PairingKey;
 }
 
 export function getPersonalizedPairingAnalysis(

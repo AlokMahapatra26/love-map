@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle, Brain, Activity, FileText } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -15,7 +15,7 @@ import { saveAssessment, getCoupleData } from '@/lib/db';
 
 type Step = 'intro' | 'your-name' | 'partner-name' | 'questions' | 'complete';
 
-export default function QuestionnairePage() {
+function QuestionnaireContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [step, setStep] = useState<Step>('intro');
@@ -420,5 +420,19 @@ export default function QuestionnairePage() {
                 {renderStep()}
             </AnimatePresence>
         </main>
+    );
+}
+
+export default function QuestionnairePage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-[#FFF0F5]">
+                <div className="text-center font-mono text-xs animate-pulse text-rose-400">
+                    LOADING PROTOCOL...
+                </div>
+            </div>
+        }>
+            <QuestionnaireContent />
+        </Suspense>
     );
 }
