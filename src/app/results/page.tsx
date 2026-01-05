@@ -30,6 +30,7 @@ import {
     getStrategiesForPairing,
     Strategy
 } from '@/lib/data/pairing-analysis';
+import { getCoupleData } from '@/lib/db';
 
 interface AssessmentData {
     coupleId?: string;
@@ -63,6 +64,20 @@ function ResultsContent() {
 
             if (p1) setPartner1(JSON.parse(p1));
             if (p2) setPartner2(JSON.parse(p2));
+
+            // Fetch from DB
+            getCoupleData(currentCoupleId).then(couple => {
+                if (couple) {
+                    if (couple.partner1) {
+                        setPartner1(couple.partner1);
+                        localStorage.setItem(`lovemap_couple_${currentCoupleId}_partner1`, JSON.stringify(couple.partner1));
+                    }
+                    if (couple.partner2) {
+                        setPartner2(couple.partner2);
+                        localStorage.setItem(`lovemap_couple_${currentCoupleId}_partner2`, JSON.stringify(couple.partner2));
+                    }
+                }
+            });
         } else {
             const p1 = localStorage.getItem('lovemap_partner1');
             const p2 = localStorage.getItem('lovemap_partner2');
@@ -184,22 +199,22 @@ function ResultsContent() {
         <div className="report-card bg-white border-rose-100 shadow-lg">
             <div className="flex justify-between items-start mb-6 border-b border-rose-100 pb-4">
                 <div>
-                    <span className="text-xs font-mono text-rose-400 block mb-1">SUBJECT PROFILE</span>
+                    <span className="text-xs font-mono text-rose-400 block mb-1">ABOUT</span>
                     <h3 className="text-2xl font-serif font-bold text-rose-900">{name}</h3>
                 </div>
                 <div className="text-right">
-                    <span className="text-xs font-mono text-rose-400 block mb-1">CLASSIFICATION</span>
+                    <span className="text-xs font-mono text-rose-400 block mb-1">CONNECTION STYLE</span>
                     <div className="font-bold uppercase tracking-wide text-rose-700">{info.name}</div>
                 </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 mb-8">
                 <div>
-                    <h4 className="font-bold text-sm uppercase tracking-wide mb-4 text-rose-800">Psychometric Profile</h4>
+                    <h4 className="font-bold text-sm uppercase tracking-wide mb-4 text-rose-800">Score Breakdown</h4>
                     {renderScoreBreakdown(result.scores)}
                 </div>
                 <div>
-                    <h4 className="font-bold text-sm uppercase tracking-wide mb-4 text-rose-800">Clinical Observations</h4>
+                    <h4 className="font-bold text-sm uppercase tracking-wide mb-4 text-rose-800">Understanding You</h4>
                     <p className="text-sm text-stone-600 leading-relaxed font-serif">
                         {info.description}
                     </p>
@@ -208,11 +223,11 @@ function ResultsContent() {
 
             <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="p-4 border border-rose-200 bg-rose-50 rounded-xl">
-                    <div className="text-xs font-mono text-rose-500 mb-1">ANXIETY SCALE</div>
+                    <div className="text-xs font-mono text-rose-500 mb-1">NEED FOR CLOSENESS</div>
                     <div className="text-lg font-bold capitalize text-rose-900">{result.anxietyLevel}</div>
                 </div>
                 <div className="p-4 border border-rose-200 bg-rose-50 rounded-xl">
-                    <div className="text-xs font-mono text-rose-500 mb-1">AVOIDANCE SCALE</div>
+                    <div className="text-xs font-mono text-rose-500 mb-1">NEED FOR SPACE</div>
                     <div className="text-lg font-bold capitalize text-rose-900">{result.avoidanceLevel}</div>
                 </div>
             </div>
@@ -220,7 +235,7 @@ function ResultsContent() {
             <div className="grid md:grid-cols-2 gap-8">
                 <div>
                     <h4 className="font-bold text-sm uppercase tracking-wide mb-3 flex items-center gap-2 text-rose-800">
-                        <Check className="w-4 h-4 text-rose-500" /> Strengths
+                        <Check className="w-4 h-4 text-rose-500" /> Beautiful Qualities
                     </h4>
                     <ul className="space-y-2">
                         {info.strengths.slice(0, 4).map((strength, i) => (
@@ -232,7 +247,7 @@ function ResultsContent() {
                 </div>
                 <div>
                     <h4 className="font-bold text-sm uppercase tracking-wide mb-3 flex items-center gap-2 text-rose-800">
-                        <AlertCircle className="w-4 h-4 text-rose-500" /> Risk Factors
+                        <AlertCircle className="w-4 h-4 text-rose-500" /> Growth Areas
                     </h4>
                     <ul className="space-y-2">
                         {info.challenges.slice(0, 3).map((challenge, i) => (
@@ -258,7 +273,7 @@ function ResultsContent() {
                 {strategy.description}
             </p>
             <div className="bg-rose-50 p-4 border border-rose-100 rounded-lg">
-                <h5 className="text-xs font-bold uppercase mb-3 text-rose-800">Implementation Protocol:</h5>
+                <h5 className="text-xs font-bold uppercase mb-3 text-rose-800">How to Do It:</h5>
                 <ol className="space-y-2 font-mono text-xs">
                     {strategy.howTo.map((step, i) => (
                         <li key={i} className="flex gap-3">
@@ -304,8 +319,8 @@ function ResultsContent() {
                     <div className="text-xs font-mono text-rose-400 mb-2">CASE FILE: {coupleId}</div>
                     <h1 className="text-3xl md:text-4xl font-serif font-bold mb-2 text-rose-900">
                         {partner2
-                            ? `Dyadic Assessment: ${partner1.yourName} & ${partner2.yourName}`
-                            : `Individual Assessment: ${partner1.yourName}`}
+                            ? `${partner1.yourName} & ${partner2.yourName}'s Love Story`
+                            : `${partner1.yourName}'s Connection Profile`}
                     </h1>
                     <div className="h-1 w-24 bg-rose-600 mt-6 rounded-full"></div>
                 </div>
@@ -335,11 +350,11 @@ function ResultsContent() {
 
                 <div className="flex border-b border-rose-200 mb-8 overflow-x-auto">
                     {[
-                        { id: 'overview', label: 'CLINICAL SUMMARY' },
-                        { id: 'partner1', label: `SUBJECT A: ${partner1.yourName.toUpperCase()}` },
-                        ...(partner2 ? [{ id: 'partner2', label: `SUBJECT B: ${partner2.yourName.toUpperCase()}` }] : []),
-                        ...(partner2 ? [{ id: 'pairing', label: 'DYADIC ANALYSIS' }] : []),
-                        ...(partner2 ? [{ id: 'strategies', label: 'INTERVENTION PLAN' }] : []),
+                        { id: 'overview', label: 'OVERVIEW' },
+                        { id: 'partner1', label: `${partner1.yourName.toUpperCase()}` },
+                        ...(partner2 ? [{ id: 'partner2', label: `${partner2.yourName.toUpperCase()}` }] : []),
+                        ...(partner2 ? [{ id: 'pairing', label: 'YOUR RELATIONSHIP' }] : []),
+                        ...(partner2 ? [{ id: 'strategies', label: 'GROWING TOGETHER' }] : []),
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -422,7 +437,7 @@ function ResultsContent() {
                         <div className="space-y-8">
                             <div className="report-card bg-white border-rose-100 shadow-lg">
                                 <div className="mb-8">
-                                    <span className="text-xs font-mono text-rose-400 block mb-2">INTERACTION DYNAMICS</span>
+                                    <span className="text-xs font-mono text-rose-400 block mb-2">YOUR CONNECTION</span>
                                     <h2 className="text-3xl font-serif font-bold mb-2 text-rose-900">{pairingAnalysis.summary}</h2>
                                     <div className="text-sm font-mono text-rose-500">
                                         {partner1.yourName} + {partner2?.yourName}
@@ -436,14 +451,14 @@ function ResultsContent() {
                                         </p>
                                     </div>
                                     <div className="bg-rose-50 p-6 border border-rose-200 rounded-xl">
-                                        <div className="text-xs font-mono text-rose-500 mb-2">STABILITY INDEX</div>
+                                        <div className="text-xs font-mono text-rose-500 mb-2">HARMONY LEVEL</div>
                                         <div className="flex gap-1 mb-1">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <div key={star} className={`w-4 h-4 rounded-sm ${star <= pairingAnalysis.stability ? 'bg-rose-600' : 'bg-rose-200'}`} />
                                             ))}
                                         </div>
                                         <div className="text-xs text-rose-400 mt-2">
-                                            Based on clinical compatibility markers.
+                                            Based on your unique connection patterns.
                                         </div>
                                     </div>
                                 </div>
@@ -452,7 +467,7 @@ function ResultsContent() {
                             <div className="grid md:grid-cols-2 gap-8">
                                 <div className="report-card bg-white border-rose-100 shadow-lg">
                                     <h3 className="font-bold text-sm uppercase tracking-wide mb-6 flex items-center gap-2 text-rose-800">
-                                        <AlertCircle className="w-4 h-4 text-rose-500" /> Conflict Vectors
+                                        <AlertCircle className="w-4 h-4 text-rose-500" /> Challenges to Navigate
                                     </h3>
                                     <ul className="space-y-4">
                                         {pairingAnalysis.keyConflicts.map((conflict, i) => (
@@ -466,7 +481,7 @@ function ResultsContent() {
 
                                 <div className="report-card bg-white border-rose-100 shadow-lg">
                                     <h3 className="font-bold text-sm uppercase tracking-wide mb-6 flex items-center gap-2 text-rose-800">
-                                        <Target className="w-4 h-4 text-rose-500" /> Growth Targets
+                                        <Target className="w-4 h-4 text-rose-500" /> Opportunities to Grow Together
                                     </h3>
                                     <ul className="space-y-4">
                                         {pairingAnalysis.growthOpportunities.map((opportunity, i) => (
@@ -486,7 +501,7 @@ function ResultsContent() {
                             <div>
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="h-px bg-rose-200 flex-1"></div>
-                                    <h3 className="font-bold font-mono text-sm uppercase text-rose-800">{partner1.yourName}'s Protocol</h3>
+                                    <h3 className="font-bold font-mono text-sm uppercase text-rose-800">Tips for {partner1.yourName}</h3>
                                     <div className="h-px bg-rose-200 flex-1"></div>
                                 </div>
                                 {strategies.forPartner1.map(renderStrategyCard)}
@@ -496,7 +511,7 @@ function ResultsContent() {
                                 <div>
                                     <div className="flex items-center gap-4 mb-6">
                                         <div className="h-px bg-rose-200 flex-1"></div>
-                                        <h3 className="font-bold font-mono text-sm uppercase text-rose-800">{partner2.yourName}'s Protocol</h3>
+                                        <h3 className="font-bold font-mono text-sm uppercase text-rose-800">Tips for {partner2.yourName}</h3>
                                         <div className="h-px bg-rose-200 flex-1"></div>
                                     </div>
                                     {strategies.forPartner2.map(renderStrategyCard)}
@@ -506,7 +521,7 @@ function ResultsContent() {
                             <div>
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="h-px bg-rose-200 flex-1"></div>
-                                    <h3 className="font-bold font-mono text-sm uppercase text-rose-800">Couple's Action Plan</h3>
+                                    <h3 className="font-bold font-mono text-sm uppercase text-rose-800">Tips for Both of You ♥</h3>
                                     <div className="h-px bg-rose-200 flex-1"></div>
                                 </div>
                                 {strategies.forCouple.map(renderStrategyCard)}

@@ -11,6 +11,7 @@ import {
     ScenarioResult
 } from '@/lib/data/scenario-questions';
 import { v4 as uuidv4 } from 'uuid';
+import { saveAssessment, getCoupleData } from '@/lib/db';
 
 type Step = 'intro' | 'your-name' | 'partner-name' | 'questions' | 'complete';
 
@@ -44,6 +45,16 @@ export default function QuestionnairePage() {
                 setPartner1Name(parsed.yourName);
                 setPartnerName(parsed.yourName);
             }
+
+            // Fetch from DB for cross-device support
+            getCoupleData(urlCoupleId).then(couple => {
+                if (couple && couple.partner1) {
+                    setPartner1Name(couple.partner1.yourName);
+                    setPartnerName(couple.partner1.yourName);
+                    // Sync to local storage
+                    localStorage.setItem(`lovemap_couple_${urlCoupleId}_partner1`, JSON.stringify(couple.partner1));
+                }
+            });
         } else {
             const existingCoupleId = localStorage.getItem('lovemap_current_couple');
             if (existingCoupleId) {
@@ -86,10 +97,12 @@ export default function QuestionnairePage() {
             if (isPartner2) {
                 localStorage.setItem(`lovemap_couple_${coupleId}_partner2`, JSON.stringify(assessmentData));
                 localStorage.setItem('lovemap_partner2', JSON.stringify(assessmentData));
+                saveAssessment(coupleId, 'partner2', assessmentData);
             } else {
                 localStorage.setItem(`lovemap_couple_${coupleId}_partner1`, JSON.stringify(assessmentData));
                 localStorage.setItem('lovemap_partner1', JSON.stringify(assessmentData));
                 localStorage.setItem('lovemap_current_couple', coupleId);
+                saveAssessment(coupleId, 'partner1', assessmentData);
             }
 
             setStep('complete');
