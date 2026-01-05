@@ -13,7 +13,7 @@ export default function HomePage() {
           <div className="w-8 h-8 bg-rose-600 flex items-center justify-center text-white rounded-full">
             <Brain size={16} />
           </div>
-          <span className="font-serif font-bold text-lg tracking-tight text-rose-900">Attachment Protocol</span>
+          <span className="font-serif font-bold text-lg tracking-tight text-rose-900">LoveMap</span>
         </div>
       </header>
 
@@ -147,13 +147,13 @@ export default function HomePage() {
       <footer className="bg-stone-900 text-stone-400 py-12 px-6">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8 text-xs font-mono">
           <div>
-            <div className="text-white font-bold mb-4">ATTACHMENT PROTOCOL A-1</div>
+            <div className="text-white font-bold mb-4">LOVEMAP</div>
             <p className="max-w-xs">
               Automated diagnostic tool for relationship compatibility and attachment style analysis.
             </p>
           </div>
           <div className="md:text-right">
-            <p className="mb-2">© 2026 CLINICAL ATTACHMENT LABS</p>
+            <p className="mb-2">© 2026 LOVEMAP</p>
             <p className="text-stone-600">
               DISCLAIMER: This tool is for educational and informational purposes only. It does not constitute a medical diagnosis or replace professional therapy.
             </p>
