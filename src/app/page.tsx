@@ -260,6 +260,9 @@ export default function HomePage() {
           </div>
           <div className="md:text-right">
             <p className="mb-2">© 2026 LOVEMAP</p>
+            <p className="text-stone-500 mb-4">
+              Created by <a href="https://github.com/AlokMahapatra26" target="_blank" rel="noopener noreferrer" className="text-stone-400 hover:text-white transition-colors border-b border-stone-700 hover:border-white pb-0.5">Alok Mahapatra</a>
+            </p>
             <p className="text-stone-600">
               DISCLAIMER: This tool is for educational and informational purposes only. It does not constitute a medical diagnosis or replace professional therapy.
             </p>
