@@ -456,9 +456,9 @@ function QuestionnaireContent() {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => setLanguage(language === 'en' ? 'hinglish' : 'en')}
-                        className="text-xs font-mono px-3 py-1 rounded-full border border-rose-200 hover:bg-rose-50 transition-colors uppercase"
+                        className="btn-secondary text-xs px-3 py-1.5 h-8 font-mono font-bold border border-stone-200"
                     >
-                        {language === 'en' ? '🇮🇳 Hinglish' : '🇺🇸 English'}
+                        {language === 'en' ? 'HI' : 'EN'}
                     </button>
                     <div className="text-xs font-mono text-rose-400">
                         {currentDate}

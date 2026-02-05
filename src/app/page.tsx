@@ -89,9 +89,7 @@ export default function HomePage() {
             {user ? 'Start Assessment' : 'Analyze My Relationship Now'}
             <ArrowRight className="w-5 h-5" />
           </button>
-          <div className="text-sm text-stone-500 font-medium">
-            <span className="text-rose-500">●</span> Free for a limited time
-          </div>
+
         </motion.div>
       </section>
 

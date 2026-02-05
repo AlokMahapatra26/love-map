@@ -18,7 +18,8 @@ export default function UserHeaderButton({ onLoginClick }: { onLoginClick: () =>
         return () => subscription.unsubscribe();
     }, []);
 
-    if (user) {
+    // Only show profile if user is authenticated and NOT anonymous
+    if (user && !user.is_anonymous) {
         return (
             <Link href="/profile" className="flex items-center gap-2 text-sm font-medium text-stone-600 hover:text-rose-600 transition-colors">
                 <User size={18} />
@@ -32,7 +33,7 @@ export default function UserHeaderButton({ onLoginClick }: { onLoginClick: () =>
             onClick={onLoginClick}
             className="text-sm font-medium text-stone-600 hover:text-rose-600 transition-colors"
         >
-            Log In
+            Sign Up
         </button>
     );
 }

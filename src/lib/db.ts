@@ -90,3 +90,36 @@ export async function deleteAssessment(coupleId: string) {
     }
     return true;
 }
+
+export async function markAssessmentAsPaid(coupleId: string) {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return false;
+
+    // First fetch the existing data to preserve other fields
+    const { data: existing, error: fetchError } = await supabase
+        .from('couples')
+        .select('partner1')
+        .eq('id', coupleId)
+        .single();
+
+    if (fetchError || !existing || !existing.partner1) {
+        console.error('Error fetching assessment for payment update:', fetchError);
+        return false;
+    }
+
+    const updatedPartner1 = {
+        ...existing.partner1,
+        hasPaid: true
+    };
+
+    const { error } = await supabase
+        .from('couples')
+        .update({ partner1: updatedPartner1 })
+        .eq('id', coupleId);
+
+    if (error) {
+        console.error('Error marking assessment as paid:', error);
+        return false;
+    }
+
+    return true;
+}

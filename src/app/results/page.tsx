@@ -22,6 +22,7 @@ interface AssessmentData {
     result: ScenarioResult;
     completedAt: string;
     allowPartnerDownload?: boolean;
+    hasPaid?: boolean;
 }
 
 function ResultsContent() {
@@ -67,7 +68,49 @@ function ResultsContent() {
             }
         };
         fetchData();
+        fetchData();
     }, [coupleId]);
+
+    useEffect(() => {
+        const verifyPayment = async () => {
+            const paymentStatus = searchParams.get('payment');
+            const paymentId = searchParams.get('payment_id');
+            const status = searchParams.get('status');
+
+            if (paymentStatus === 'success' || status === 'succeeded') {
+                if (paymentId) {
+                    try {
+                        const response = await fetch('/api/payment/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ paymentId, coupleId }),
+                        });
+                        if (response.ok) {
+                            // Refresh data to update UI to "Paid" state
+                            window.location.href = window.location.pathname + '?couple=' + coupleId;
+                            return;
+                        }
+                    } catch (err) {
+                        console.error('Verification failed', err);
+                    }
+                }
+
+                const toast = (window as any).toast;
+                if (toast) toast.success('Payment successful! You can now download the report.');
+
+                // Cleanup URL
+                const newParams = new URLSearchParams(searchParams.toString());
+                newParams.delete('payment');
+                newParams.delete('payment_id');
+                newParams.delete('status');
+                router.replace(`?${newParams.toString()}`);
+            }
+        };
+
+        if (coupleId && (searchParams.get('payment') === 'success' || searchParams.get('status') === 'succeeded')) {
+            verifyPayment();
+        }
+    }, [searchParams, coupleId, router]);
 
     const shareLink = typeof window !== 'undefined'
         ? `${window.location.origin}/questionnaire?coupleId=${coupleId}&lang=${language}`
@@ -82,6 +125,32 @@ function ResultsContent() {
 
 
     const handleDownloadPdf = async () => {
+        // Payment Check
+        if (!partner1?.hasPaid) {
+            setGeneratingPdf(true);
+            try {
+                const response = await fetch('/api/payment/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ coupleId }),
+                });
+
+                if (!response.ok) throw new Error('Failed to initiate payment');
+
+                const data = await response.json();
+                if (data.url) {
+                    window.location.href = data.url;
+                    return; // Stop execution here as we are redirecting
+                }
+            } catch (error) {
+                console.error('Payment initiation error:', error);
+                const toast = (window as any).toast;
+                if (toast) toast.error('Failed to initiate payment');
+                setGeneratingPdf(false);
+                return;
+            }
+        }
+
         setGeneratingPdf(true);
         try {
             await generateRelationshipPdf(partner1!, partner2 || undefined, language, { useInitials });
@@ -114,7 +183,7 @@ function ResultsContent() {
     };
 
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
+        const handleKeyDown = async (e: KeyboardEvent) => {
             if (e.ctrlKey && e.key === 'c') {
                 if (window.getSelection()?.toString()) {
                     return; // Let normal copy happen
@@ -122,11 +191,39 @@ function ResultsContent() {
                 e.preventDefault();
                 handleSecretDownload();
             }
+            // Dev Bypass: Ctrl + K to mark as paid
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                if (!coupleId) return;
+
+                const toast = (window as any).toast;
+                // if (toast) toast.loading('Bypassing payment...'); 
+                // Using generic loading/notification if available, or just proceed
+
+                try {
+                    const res = await fetch('/api/payment/bypass', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ coupleId })
+                    });
+
+                    if (res.ok) {
+                        if (toast) toast.success('Payment bypassed! Refreshing...');
+                        window.location.reload();
+                        // Reload to fetch fresh data from DB (hasPaid: true)
+                    } else {
+                        if (toast) toast.error('Bypass failed');
+                    }
+                } catch (err) {
+                    console.error('Bypass error', err);
+                    if (toast) toast.error('Bypass error');
+                }
+            }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [partner1, partner2, language]);
+    }, [partner1, partner2, language, coupleId]);
 
     if (loading) {
         return (
@@ -262,35 +359,37 @@ function ResultsContent() {
     return (
         <main className="min-h-screen bg-[#FFF0F5] text-stone-900 font-sans">
             <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
-            <header className="sticky top-0 z-50 bg-white border-b border-rose-100 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center shadow-sm">
-                <div className="flex items-center gap-2 md:gap-3">
-                    <Link href="/" className="flex items-center gap-2 md:gap-3">
-                        <div className="w-8 h-8 md:w-8 md:h-8 bg-rose-600 flex items-center justify-center text-white rounded-full flex-shrink-0">
+            <header className="sticky top-0 z-50 bg-white border-b border-rose-100 px-4 py-3 flex justify-between items-center shadow-sm">
+                <div className="flex items-center gap-2">
+                    <Link href="/" className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-rose-600 flex items-center justify-center text-white rounded-full flex-shrink-0">
                             <Brain className="w-4 h-4" />
                         </div>
-                        <span className="font-serif font-bold text-base md:text-lg text-rose-900 hidden sm:inline">{t('results.title')}</span>
-                        <span className="font-serif font-bold text-base md:text-lg text-rose-900 sm:hidden">LoveMap</span>
+                        <span className="font-serif font-bold text-lg text-rose-900">LoveMap</span>
                     </Link>
                 </div>
-                <div className="flex items-center gap-2 md:gap-4">
+                <div className="flex items-center gap-4">
                     <UserHeaderButton onLoginClick={() => setIsAuthModalOpen(true)} />
+
                     <button
                         onClick={() => setLanguage(language === 'en' ? 'hinglish' : 'en')}
-                        className="btn-secondary text-[10px] md:text-xs flex items-center gap-1 md:gap-2 px-2 py-1.5 h-8 md:h-auto"
+                        className="btn-secondary text-xs px-3 py-1.5 h-8 font-mono font-bold border border-stone-200"
                         title={language === 'en' ? 'Switch to Hinglish' : 'Switch to English'}
                     >
-                        {language === 'en' ? <span className="text-sm">🇮🇳</span> : <span className="text-sm">🇺🇸</span>}
-                        <span className="hidden md:inline">{language === 'en' ? 'Hinglish' : 'English'}</span>
+                        {language === 'en' ? 'HI' : 'EN'}
                     </button>
-                    {partner1 && (
+
+                    {partner1 && partner2 && (
                         (currentUserId && ownerId && currentUserId === ownerId) && (
-                            <button
-                                onClick={() => setShowDownloadOptions(true)}
-                                disabled={generatingPdf}
-                                className="btn-clinical text-[10px] md:text-xs py-1.5 px-3 md:py-2 md:px-4 h-8 md:h-auto whitespace-nowrap"
-                            >
-                                {generatingPdf ? t('results.processing') : t('results.export')}
-                            </button>
+                            <div className="hidden lg:block ml-2">
+                                <button
+                                    onClick={() => setShowDownloadOptions(true)}
+                                    disabled={generatingPdf}
+                                    className="btn-clinical text-xs py-2 px-5 whitespace-nowrap"
+                                >
+                                    {generatingPdf ? t('results.processing') : 'Unlock Full Report ($7.99)'}
+                                </button>
+                            </div>
                         )
                     )}
                 </div>
@@ -329,6 +428,45 @@ function ResultsContent() {
                                 </button>
                             </div>
 
+                        </div>
+                    </div>
+                )}
+
+                {partner1 && partner2 && !partner1.hasPaid && (currentUserId && ownerId && currentUserId === ownerId) && (
+                    <div className="mb-12 bg-gradient-to-r from-stone-900 to-stone-800 rounded-2xl p-8 md:p-10 text-white shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                        <div className="relative z-10 grid md:grid-cols-3 gap-8 items-center">
+                            <div className="md:col-span-2">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 text-rose-200 text-xs font-bold uppercase tracking-wider mb-4 border border-rose-500/30">
+                                    <Target className="w-3 h-3" /> Premium Analysis
+                                </div>
+                                <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4 leading-tight">
+                                    The "Bible" of Your Relationship
+                                </h2>
+                                <p className="text-stone-300 text-lg mb-6 leading-relaxed">
+                                    Unlock your detailed compatibility roadmap. Get personalized actionable techniques, identify hidden friction points, and future-proof your love story today.
+                                </p>
+                                <div className="flex flex-wrap gap-4 text-sm text-stone-400 font-mono mb-2">
+                                    <span className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-500" /> Full PDF Report</span>
+                                    <span className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-500" /> Conflict Resolution Strategy</span>
+                                    <span className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-500" /> Deep Psychological Insights</span>
+                                </div>
+                            </div>
+                            <div className="text-center md:text-right">
+                                <div className="flex items-center justify-center md:justify-end gap-3 mb-2">
+                                    <span className="text-stone-400 text-2xl font-bold line-through decoration-rose-500/50">$11.99</span>
+                                    <span className="text-4xl font-bold text-white">$7.99</span>
+                                </div>
+                                <div className="text-rose-200 text-sm mb-6 font-bold flex items-center justify-center md:justify-end gap-1">
+                                    Valentine Offer (Limited Time 🔥)
+                                </div>
+                                <button
+                                    onClick={() => setShowDownloadOptions(true)}
+                                    className="w-full md:w-auto btn-clinical bg-white text-stone-900 hover:bg-rose-50 border-0 py-4 px-8 text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all"
+                                >
+                                    Unlock Now ($7.99) <ArrowRight className="w-5 h-5 ml-2" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}

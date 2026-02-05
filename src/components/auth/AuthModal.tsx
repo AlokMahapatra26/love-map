@@ -139,6 +139,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                             </button>
                         </form>
 
+                        <div className="mt-4 p-3 bg-stone-50 rounded-lg border border-stone-100 text-xs text-stone-500 text-center leading-relaxed">
+                            <span className="font-semibold block mb-1 text-rose-500">Privacy Note:</span>
+                            You can use any dummy email (e.g., anon@test.com). We do not send OTPs or verify specific emails, so feel free to maintain your privacy.
+                        </div>
+
                         <div className="mt-6 text-center">
                             <button
                                 onClick={() => {
