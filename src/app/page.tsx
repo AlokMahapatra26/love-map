@@ -93,7 +93,77 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* Video Section */}
+      {/* Emotional Triggers Section */}
+      <section className="px-6 py-20 bg-white border-y border-rose-100">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-5xl font-serif font-bold text-rose-900 mb-6">Do you ever feel like…</h2>
+            <div className="w-24 h-1 bg-rose-500 mx-auto rounded-full"></div>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-16">
+            {[
+              "Your partner pulls away emotionally even when you need them most?",
+              "You're always the one chasing reassurance?",
+              "Love feels intense — then suddenly distant?",
+              "Small fights turn into big overthinking?",
+              "You need closeness, but they need space?",
+              "You can't tell if they're \"done\" or just quiet?",
+              "You love deeply, but fear it might not be returned?"
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="flex items-start gap-4 p-6 rounded-2xl bg-[#FFF0F5]/50 border border-rose-100 hover:shadow-lg hover:border-rose-200 transition-all group"
+              >
+                <div className="w-8 h-8 rounded-full bg-white border border-rose-200 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-sm">
+                  <span className="text-lg">👉</span>
+                </div>
+                <p className="text-lg text-stone-700 font-serif leading-relaxed">{item}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-center bg-stone-900 rounded-3xl p-8 md:p-12 text-white shadow-2xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -ml-16 -mb-16"></div>
+
+            <div className="relative z-10">
+              <h3 className="text-2xl md:text-4xl font-serif font-bold mb-6 leading-tight">
+                What if the problem isn’t lack of love — <br className="hidden md:block" />
+                <span className="text-rose-400">but your attachment style?</span>
+              </h3>
+
+              <p className="text-lg text-stone-300 mb-8 max-w-2xl mx-auto">
+                Take our free 2-minute quiz and discover your attachment type — then unlock your full A–Z guide with practical insights & solutions.
+              </p>
+
+              <button
+                onClick={handleAnalyzeClick}
+                className="btn-clinical bg-white text-stone-900 hover:bg-rose-50 border-0 py-4 px-10 text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all"
+              >
+                {user ? 'Start Assessment' : 'Take the Free Quiz'}
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
       <section className="px-6 pb-20 max-w-4xl mx-auto">
         <div className="report-card overflow-hidden p-0 border-rose-200 shadow-xl">
           <div className="aspect-video w-full">
