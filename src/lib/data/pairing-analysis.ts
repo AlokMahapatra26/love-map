@@ -9,27 +9,20 @@ export type PairingKey =
 export interface PairingAnalysis {
     stability: number; // 1-5
     summary: string;
+    summaryHinglish?: string;
     dynamics: string;
+    dynamicsHinglish?: string;
     keyConflicts: string[];
+    keyConflictsHinglish?: string[];
     strengths: string[];
+    strengthsHinglish?: string[];
     riskFactors: string[];
+    riskFactorsHinglish?: string[];
     growthOpportunities: string[];
+    growthOpportunitiesHinglish?: string[];
 }
 
-export interface Strategy {
-    id: string;
-    title: string;
-    description: string;
-    howTo: string[];
-    forStyle?: AttachmentStyle | 'both';
-    category: 'communication' | 'conflict' | 'intimacy' | 'self-care' | 'trust' | 'growth';
-}
-
-export interface PairingStrategies {
-    forPartner1: Strategy[];
-    forPartner2: Strategy[];
-    forCouple: Strategy[];
-}
+// ... (keep Strategy interface and others unchanged)
 
 // Normalize pairing key (order doesn't matter for same-type pairings)
 export function getPairingKey(style1: AttachmentStyle, style2: AttachmentStyle): PairingKey {
@@ -43,11 +36,13 @@ export function getPairingKey(style1: AttachmentStyle, style2: AttachmentStyle):
     return `${style2}-${style1}` as PairingKey;
 }
 
+// Update getPersonalizedPairingAnalysis to handle Hinglish
 export function getPersonalizedPairingAnalysis(
     style1: AttachmentStyle,
     style2: AttachmentStyle,
     name1: string,
-    name2: string
+    name2: string,
+    language: 'en' | 'hinglish' = 'en'
 ): PairingAnalysis {
     const key = getPairingKey(style1, style2);
     const analysis = pairingAnalyses[key];
@@ -56,6 +51,7 @@ export function getPersonalizedPairingAnalysis(
     const personalized = JSON.parse(JSON.stringify(analysis));
 
     const replaceText = (text: string) => {
+        if (!text) return text;
         let newText = text;
 
         // Handle "Both partners" for all pairings
@@ -76,24 +72,31 @@ export function getPersonalizedPairingAnalysis(
 
             const p2StyleRegex2 = new RegExp(`${style2} partner`, 'gi');
             newText = newText.replace(p2StyleRegex2, name2);
-        } else {
-            // Same styles - generic replacements
-            // "The anxious partner" -> "An anxious partner" or keep generic?
-            // Usually same-style descriptions use "Both" or plural.
-            // If singular is used, it might be referring to a hypothetical.
-            // Let's leave singular style references alone for same-style pairings to avoid confusion,
-            // or replace "The [style] partner" with "Each partner".
         }
 
         return newText;
     };
 
-    personalized.summary = replaceText(personalized.summary);
-    personalized.dynamics = replaceText(personalized.dynamics);
-    personalized.keyConflicts = personalized.keyConflicts.map(replaceText);
-    personalized.strengths = personalized.strengths.map(replaceText);
-    personalized.riskFactors = personalized.riskFactors.map(replaceText);
-    personalized.growthOpportunities = personalized.growthOpportunities.map(replaceText);
+    // For Hinglish, we might want to just return the static translation for now 
+    // as dynamic replacement in mixed lang is hard without specific tokens.
+    // Or we can try basic replacement if names are used.
+
+    if (language === 'hinglish') {
+        // If Hinglish content exists, return it, otherwise fallback to English
+        personalized.summary = analysis.summaryHinglish || replaceText(analysis.summary);
+        personalized.dynamics = analysis.dynamicsHinglish || replaceText(analysis.dynamics);
+        personalized.keyConflicts = (analysis.keyConflictsHinglish || analysis.keyConflicts).map((t: string) => replaceText(t)); // Simple map for now
+        personalized.strengths = (analysis.strengthsHinglish || analysis.strengths).map((t: string) => replaceText(t));
+        personalized.riskFactors = (analysis.riskFactorsHinglish || analysis.riskFactors).map((t: string) => replaceText(t));
+        personalized.growthOpportunities = (analysis.growthOpportunitiesHinglish || analysis.growthOpportunities).map((t: string) => replaceText(t));
+    } else {
+        personalized.summary = replaceText(personalized.summary);
+        personalized.dynamics = replaceText(personalized.dynamics);
+        personalized.keyConflicts = personalized.keyConflicts.map(replaceText);
+        personalized.strengths = personalized.strengths.map(replaceText);
+        personalized.riskFactors = personalized.riskFactors.map(replaceText);
+        personalized.growthOpportunities = personalized.growthOpportunities.map(replaceText);
+    }
 
     return personalized;
 }
@@ -102,11 +105,18 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
     'secure-secure': {
         stability: 5,
         summary: "The Gold Standard",
+        summaryHinglish: "Sone Jaisa Khara Rishta (Gold Standard)",
         dynamics: "This is the most stable and satisfying pairing. Both partners bring emotional maturity, effective communication skills, and the ability to balance intimacy with independence. Conflicts are handled constructively, and both partners feel safe to be vulnerable.",
+        dynamicsHinglish: "Ye sabse stable aur satisfying jodi hai. Dono partners samajhdaar hain, baat karne mein achhe hain, aur pyaar-space ka balance banana jaante hain. Jhagde araam se suljha liye jaate hain aur dono ek doosre ke saath khul kar rehne mein safe feel karte hain.",
         keyConflicts: [
             "May take relationship health for granted",
             "Could become complacent about nurturing the relationship",
             "Might underestimate the need for continued effort",
+        ],
+        keyConflictsHinglish: [
+            "Rishte ko 'granted' le lena (sab to theek hi hai)",
+            "Mehnat karna chhod dena kyunki sab smooth hai",
+            "Rishte ko hamesha taaza rakhne ki zaroorat bhool jana",
         ],
         strengths: [
             "Natural, easy communication",
@@ -115,10 +125,22 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Healthy balance of togetherness and independence",
             "Strong foundation of trust",
         ],
+        strengthsHinglish: [
+            "Baat-cheet mein assani aur natural flow",
+            "Jhagde suljhane ka sahi tareeka",
+            "Dono dil ki baat khul kar bolte hain",
+            "Saath rehna aur alag rehna, dono balanced hai",
+            "Bharose ki mazboot neeve (foundation)",
+        ],
         riskFactors: [
             "External stressors (work, family) if not managed together",
             "Taking each other for granted over time",
             "Assuming the other always knows what you need",
+        ],
+        riskFactorsHinglish: [
+            "Bahar ki tension (kaam, family) agar saath mil kar na sambhalein",
+            "Waqt ke saath ek doosre ki kadar kam ho jana",
+            "Ye sochna ki 'wo to sab jaanta hi hai'",
         ],
         growthOpportunities: [
             "Deepen already strong connection",
@@ -126,17 +148,31 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Support each other's individual growth",
             "Build shared meaning and legacy",
         ],
+        growthOpportunitiesHinglish: [
+            "Apne strong connection ko aur gehra karein",
+            "Doosron ke liye ek misaal banein",
+            "Ek doosre ki personal growth mein madad karein",
+            "Saath mil kar kuch bada karein (goals/dreams)",
+        ],
     },
 
     'secure-anxious': {
         stability: 4,
         summary: "The Anchor and the Yearner",
+        summaryHinglish: "Anchor aur Chahat Rakhne Wala",
         dynamics: "The secure partner can provide a stable, reassuring presence that helps the anxious partner develop more security over time. However, the secure partner must be patient with reassurance needs while setting healthy boundaries. This pairing has strong potential for the anxious partner to 'earn' secure attachment.",
+        dynamicsHinglish: "Secure partner ek mazboot sahara (anchor) banta hai jo Anxious partner ko shanti aur bharosa deta hai. Secure partner ko thoda sabr rakhna padta hai jab partner ko tasalli chahiye ho. Agar sahi se handle kiya jaye, to Anxious partner bhi dheere-dheere Secure ban sakta hai.",
         keyConflicts: [
             "Anxious partner may need more reassurance than secure partner naturally provides",
             "Secure partner might feel overwhelmed by emotional intensity at times",
             "Different response times to messages/calls can cause friction",
             "Anxious partner may misinterpret secure partner's independence as rejection",
+        ],
+        keyConflictsHinglish: [
+            "Anxious partner ko Secure partner se zyada tasalli chahiye hoti hai",
+            "Secure partner kabhi-kabhi emotional pressure feel kar sakta hai",
+            "Message/Call ka reply late aane par tension hona",
+            "Secure partner ke 'me-time' ko Anxious partner rejection samajh leta hai",
         ],
         strengths: [
             "Secure partner provides consistent emotional availability",
@@ -144,10 +180,21 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Opportunity for anxious partner to develop security",
             "Secure partner's calm can help regulate anxious partner",
         ],
+        strengthsHinglish: [
+            "Secure partner hamesha emotionally available rehta hai",
+            "Anxious partner gehra pyaar aur devotion lata hai",
+            "Anxious partner ke paas Secure banne ka mauka hota hai",
+            "Secure partner ki shanti Anxious partner ko bhi shant karti hai",
+        ],
         riskFactors: [
             "Secure partner becoming frustrated with constant reassurance needs",
             "Anxious partner's fears triggering pursuit behavior",
             "Secure partner withdrawing when feeling overwhelmed",
+        ],
+        riskFactorsHinglish: [
+            "Tasalli dete-dete Secure partner ka thak jana",
+            "Anxious partner ka darr ke maare pichhe pad jana",
+            "Preshan ho kar Secure partner ka door ho jana",
         ],
         growthOpportunities: [
             "Anxious partner learning self-soothing from secure partner",
@@ -155,17 +202,31 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Building communication protocols for reassurance",
             "Creating predictable rituals that reduce anxiety",
         ],
+        growthOpportunitiesHinglish: [
+            "Anxious partner ka khud ko shant karna seekhna",
+            "Secure partner ka ghabrahat ko behtar samajhna",
+            "Tasalli dene ke liye fix tareeke banana",
+            "Aise rituals banana jisse tension kam ho (jaise roz goodnight call)",
+        ],
     },
 
     'secure-avoidant': {
         stability: 4,
         summary: "The Connector and the Independent",
+        summaryHinglish: "Jodnewala aur Azaad Panchhi",
         dynamics: "The secure partner's patience and respect for boundaries can help the avoidant partner gradually open up. The avoidant partner benefits from a non-pressuring presence, while the secure partner must advocate for their intimacy needs without creating pressure.",
+        dynamicsHinglish: "Secure partner ka sabr aur boundaries ki izzat karna Avoidant partner ko khulne mein madad karta hai. Avoidant partner ko ye achha lagta hai ki koi unpe pressure nahi daal raha. Secure partner ko apni zarooratein batani chahiye, par bina pressure banaye.",
         keyConflicts: [
             "Different needs for emotional closeness and sharing",
             "Secure partner may want more verbal affirmation",
             "Avoidant partner needs space that secure partner might not understand",
             "Timing of emotional conversations can be challenging",
+        ],
+        keyConflictsHinglish: [
+            "Pyaar dikhane aur baat karne ki alag-alag zarooratein",
+            "Secure partner chahta hai ki pyaar bol kar dikhaya jaye",
+            "Avoidant partner ko space chahiye jo shayad samajh na aaye",
+            "Emotional baaton ka sahi time milna mushkil ho sakta hai",
         ],
         strengths: [
             "Secure partner doesn't take withdrawal personally",
@@ -173,10 +234,21 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Mutual respect for independence",
             "Low drama, practical approach to problems",
         ],
+        strengthsHinglish: [
+            "Avoidant ke door jaane ko Secure partner dil pe nahi leta",
+            "Avoidant partner stability aur consistency deta hai",
+            "Ek doosre ki azaadi ki izzat karna",
+            "Kam drama, problems ko practical tareeke se suljhana",
+        ],
         riskFactors: [
             "Secure partner sacrificing their needs for connection",
             "Avoidant partner never fully opening up",
             "Emotional intimacy remaining shallow",
+        ],
+        riskFactorsHinglish: [
+            "Secure partner ka apni zarooraton ko maar dena",
+            "Avoidant partner ka kabhi poori tarah na khulna",
+            "Rishta upar-upar se theek, par gehra nahi",
         ],
         growthOpportunities: [
             "Avoidant partner practicing vulnerability in safe environment",
@@ -184,17 +256,31 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Building bridges between action-based and verbal expressions of love",
             "Avoidant partner developing emotional vocabulary",
         ],
+        growthOpportunitiesHinglish: [
+            "Avoidant partner ka dheere-dheere khulna practice karna",
+            "Secure partner ka pyaar ke alag tareekon (actions) ko samajhna",
+            "Bolne aur karne wale pyaar ke beech pul banana",
+            "Avoidant partner ka apni feelings ke liye shabd dhoondna",
+        ],
     },
 
     'secure-disorganized': {
         stability: 3,
         summary: "The Steady Rock and the Storm",
+        summaryHinglish: "Chattan aur Toofan",
         dynamics: "The secure partner's consistency can be healing for the disorganized partner, but the unpredictable push-pull dynamics require significant patience and understanding. The secure partner must not take hot-and-cold behavior personally while maintaining healthy boundaries.",
+        dynamicsHinglish: "Secure partner ki stability Disorganized partner ke liye dawai ka kaam karti hai. Par Disorganized partner ka kabhi paas aana aur kabhi door jana bardaasht karne ke liye bohat sabr chahiye. Secure partner ko unke mood swings ko dil pe nahi lena chahiye.",
         keyConflicts: [
             "Disorganized partner's unpredictable emotional swings",
             "Secure partner may feel confused by contradictory signals",
             "Past trauma can be triggered unexpectedly",
             "Building trust takes much longer than expected",
+        ],
+        keyConflictsHinglish: [
+            "Disorganized partner ke achanak badalte moods",
+            "Secure partner confuse ho sakta hai (abhi haan, abhi naa)",
+            "Purane ghaav achanak ubhar sakte hain",
+            "Bharosa banne mein kaafi waqt lagta hai",
         ],
         strengths: [
             "Secure partner provides corrective emotional experience",
@@ -202,11 +288,23 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Secure partner's emotional regulation helps both",
             "Potential for profound transformation",
         ],
+        strengthsHinglish: [
+            "Secure partner ek naya aur achha experience deta hai",
+            "Lagataar aur bina daraye pyaar karne se healing hoti hai",
+            "Secure partner ka shant rehna dono ko sambhal leta hai",
+            "Rishte mein aur insaan mein bada badlaav aa sakta hai",
+        ],
         riskFactors: [
             "Secure partner becoming exhausted by unpredictability",
             "Disorganized partner's fear leading to sabotage",
             "Secure partner taking on caretaker role",
             "Trauma responses being triggered during intimacy",
+        ],
+        riskFactorsHinglish: [
+            "Mood swings se Secure partner ka thak jana",
+            "Disorganized partner ka darr ke karan rishta kharab karna",
+            "Secure partner ka 'caretaker' ya 'nurse' ban jana",
+            "Pyaar ke waqt purane darr ka samne aana",
         ],
         growthOpportunities: [
             "Disorganized partner learning that safety and love can coexist",
@@ -214,18 +312,33 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Creating new, positive relationship templates",
             "Professional support accelerating healing",
         ],
+        growthOpportunitiesHinglish: [
+            "Disorganized partner ka seekhna ki safety aur pyaar saath ho sakte hain",
+            "Dono ka aur zyada sabr aur samajh banana",
+            "Rishte ka naya aur positive tareeka seekhna",
+            "Therapy ya expert ki madad se jaldi sudhaar",
+        ],
     },
 
     'anxious-anxious': {
         stability: 3,
         summary: "The Double Flame",
+        summaryHinglish: "Do Jwalamukhi",
         dynamics: "Both partners deeply understand each other's need for connection and reassurance. The relationship can be intensely loving, but both may struggle with mutual dependency on each other for emotional regulation. Without external support, anxiety can amplify.",
+        dynamicsHinglish: "Dono ek doosre ki pyaar aur tasalli ki zaroorat ko bohat achhe se samajhte hain. Pyaar bohat gehra ho sakta hai, par dono ek doosre par had se zyada depend ho sakte hain. Agar dhyaan na diya to ghabrahat dugni ho sakti hai.",
         keyConflicts: [
             "Both seeking reassurance simultaneously during stress",
             "Potential for codependency",
             "Anxiety feeding off each other in a spiral",
             "Difficulty giving space when both crave closeness",
             "Competition for whose needs get met first",
+        ],
+        keyConflictsHinglish: [
+            "Tension mein dono ko ek saath tasalli chahiye hoti hai",
+            "Ek doosre ke bina jeena mushkil ho jana (Codependency)",
+            "Ek ki ghabrahat se doosre ki ghabrahat badhna",
+            "Dono ko chipakna hai, to space kaun de?",
+            "Ye race ki 'pehle mujhe sambhalo'",
         ],
         strengths: [
             "Deep mutual understanding of emotional needs",
@@ -234,11 +347,24 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Verbal expressions of love flow easily",
             "Emotional attunement and responsiveness",
         ],
+        strengthsHinglish: [
+            "Ek doosre ke emotions ko poori tarah samajhna",
+            "Koi kisi ko 'chipku' ya 'zyada' nahi lagta",
+            "Rishte ko bachane ki dono mein chahat",
+            "Pyaar ka izhaar asaani se karna",
+            "Ek doosre ke dukh-dard ko mehsoos karna",
+        ],
         riskFactors: [
             "Escalating anxiety without a grounding influence",
             "Losing individual identity in the relationship",
             "Burnout from constant emotional intensity",
             "Difficulty making decisions independently",
+        ],
+        riskFactorsHinglish: [
+            "Koi shant karane wala nahi, to tension badhti hi jati hai",
+            "Rishte mein khud ko kho dena",
+            "Har waqt emotional rehne se thakawat",
+            "Akele faisle lene mein dikkat",
         ],
         growthOpportunities: [
             "Both learning self-soothing techniques together",
@@ -246,12 +372,20 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Developing trust in the relationship's stability",
             "Creating rituals that satisfy reassurance needs efficiently",
         ],
+        growthOpportunitiesHinglish: [
+            "Dono ka saath mein khud ko shant karna seekhna",
+            "Apne alag shauk aur dost banana",
+            "Rishte ki mazbooti par bharosa paida karna",
+            "Tasalli ke liye aasaan tareeke dhoondna",
+        ],
     },
 
     'anxious-avoidant': {
         stability: 2,
         summary: "The Pursuer and the Distancer",
+        summaryHinglish: "Ek Bhagta hai, Ek Pichha Karta hai",
         dynamics: "This is the most challenging pairing, characterized by a painful push-pull cycle. The anxious partner pursues connection, which triggers the avoidant partner to withdraw, which increases the anxious partner's panic, creating a destructive loop. Breaking this cycle requires conscious effort from both.",
+        dynamicsHinglish: "Ye sabse mushkil jodi hai. Isme ek 'pakdam-pakdai' ka painful cycle chalta hai. Anxious partner paas aana chahta hai, Avoidant partner bhaagta hai. Jitna wo bhaagta hai, Anxious utna darta hai aur pichha karta hai. Is cycle ko todne ke liye dono ko mehnat karni hogi.",
         keyConflicts: [
             "Classic pursuit-withdrawal cycle",
             "Anxious partner feels rejected; avoidant feels smothered",
@@ -260,17 +394,37 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Each partner's coping triggers the other's fears",
             "Fundamental misunderstanding of what the other needs",
         ],
+        keyConflictsHinglish: [
+            "Wahi purana 'tum bhaago main pakdun' khel",
+            "Anxious ko lagta hai thukra diya, Avoidant ko lagta hai daboch liya",
+            "'Kitna pyaar kaafi hai' ispe alag rai",
+            "Baat karne ka timing hamesha galat hota hai",
+            "Ek ka bachaav doosre ke liye hamla ban jata hai",
+            "Ek doosre ki zaroorat ko na samajhna",
+        ],
         strengths: [
             "Strong initial attraction (familiar dynamics)",
             "Potential for profound growth if cycle is broken",
             "Both have something to teach the other",
             "Success here means mastering relationship skills",
         ],
+        strengthsHinglish: [
+            "Shuruwaat mein zabardast attraction (filmi type)",
+            "Agar cycle toot jaye to bohat growth ho sakti hai",
+            "Dono ek doosre ko wo sikha sakte hain jo unke paas nahi hai",
+            "Agar ye rishta chal gaya, to aap relationship expert ban jayenge",
+        ],
         riskFactors: [
             "Exhaustion from constant conflict cycle",
             "Anxious partner's self-esteem eroding",
             "Avoidant partner checking out emotionally",
             "Both confirming their worst fears about relationships",
+        ],
+        riskFactorsHinglish: [
+            "Roz ke jhagdo se thak jana",
+            "Anxious partner ka confidence khatam ho jana",
+            "Avoidant partner ka dil se door ho jana",
+            "Dono ka ye maan lena ki 'rishte hote hi bekaar hain'",
         ],
         growthOpportunities: [
             "Learning to meet in the middle",
@@ -279,12 +433,21 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Breaking generational patterns",
             "Developing communication skills neither had before",
         ],
+        growthOpportunitiesHinglish: [
+            "Beech ka raasta nikalna seekhna",
+            "Anxious partner ka khud par nirbhar hona",
+            "Avoidant partner ka khulna seekhna",
+            "Khandani patterns ko todna",
+            "Baat karne ka wo tareeka seekhna jo pehle nahi aata tha",
+        ],
     },
 
     'anxious-disorganized': {
         stability: 2,
         summary: "The Seeker and the Conflicted",
+        summaryHinglish: "Dhoondne Wala aur Uljha Hua",
         dynamics: "Both partners crave connection but experience it differently. The anxious partner's consistent pursuit may initially feel safe to the disorganized partner, but can become overwhelming. When the disorganized partner's avoidant side activates, the anxious partner's fears are triggered.",
+        dynamicsHinglish: "Dono ko pyaar chahiye par alag tareeke se. Anxious partner ka lagataar pyaar dena shuru mein Disorganized partner ko achha lagta hai, par baad mein bhaari padne lagta hai. Jab Disorganized partner door hota hai, to Anxious partner darr jata hai.",
         keyConflicts: [
             "Disorganized partner's hot-and-cold triggers anxious partner's fears",
             "High emotional intensity from both sides",
@@ -292,11 +455,24 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Both may feel they're giving more than receiving",
             "Trust-building is slow and easily disrupted",
         ],
+        keyConflictsHinglish: [
+            "Disorganized ka kabhi narm kabhi garm hona Anxious ko darata hai",
+            "Dono taraf se high drama/emotions",
+            "Aaj kaisa mood hoga, pata nahi chalta",
+            "Dono ko lagta hai wahi zyada kar rahe hain",
+            "Bharosa banna mushkil, tootna aasaan",
+        ],
         strengths: [
             "Mutual understanding of emotional depth",
             "Neither dismisses the other's feelings",
             "Both highly motivated to make it work",
             "Capacity for intense connection when aligned",
+        ],
+        strengthsHinglish: [
+            "Emotions ki gehrai ko dono samajhte hain",
+            "Koi kisi ki feelings ko mazaak nahi banata",
+            "Rishta bachane ki dono ki chahat",
+            "Jab saath hote hain to connection bohat gehra hota hai",
         ],
         riskFactors: [
             "Emotional volatility exhausting both partners",
@@ -304,24 +480,45 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Disorganized partner feeling trapped by intensity",
             "Conflict escalation without resolution",
         ],
+        riskFactorsHinglish: [
+            "Emotions ke utaar-chadhaav se thakawat",
+            "Anxious partner hamesha insecurity mein rehta hai",
+            "Disorganized partner ko ghutan feel hona",
+            "Jhagda badhta jata hai, sulajhta nahi",
+        ],
         growthOpportunities: [
             "Learning co-regulation techniques",
             "Building secure patterns together",
             "Both developing emotional regulation skills",
             "Professional support can accelerate progress",
         ],
+        growthOpportunitiesHinglish: [
+            "Ek doosre ko shant karna seekhna",
+            "Saath mil kar secure tareeke banana",
+            "Apne emotions ko control karna seekhna",
+            "Expert ki madad se jaldi improvement",
+        ],
     },
 
     'avoidant-avoidant': {
         stability: 3,
         summary: "The Parallel Lives",
+        summaryHinglish: "Do Alag Duniyayein",
         dynamics: "Both partners value independence and may create a relationship that looks functional but lacks emotional depth. They understand each other's need for space but may never develop true intimacy. The relationship can feel more like roommates than partners.",
+        dynamicsHinglish: "Dono ko apni azaadi pasand hai. Rishta upar se theek lagta hai par andar gehrai nahi hoti. Wo space ki zaroorat samajhte hain par kabhi dil se dil nahi milta. Partners kam, roommates zyada lagte hain.",
         keyConflicts: [
             "Neither initiates emotional conversations",
             "Intimacy needs go unspoken and unmet",
             "Problems are avoided rather than addressed",
             "Relationship can drift apart without drama",
             "Neither pursues closeness when distance grows",
+        ],
+        keyConflictsHinglish: [
+            "Koi bhi dil ki baat shuru nahi karta",
+            "Pyaar ki zaroorat dab kar reh jati hai",
+            "Problems ko solve karne ki jagah taal diya jata hai",
+            "Bina ladai ke rishta khatam ho sakta hai",
+            "Doori badhne par koi paas aane ki koshish nahi karta",
         ],
         strengths: [
             "Mutual respect for independence",
@@ -330,11 +527,24 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Practical, logistical harmony",
             "Both feel 'understood' in their need for space",
         ],
+        strengthsHinglish: [
+            "Ek doosre ki azaadi ki izzat",
+            "Kam ladai aur drama",
+            "Koi ghutan mehsoos nahi karta",
+            "Ghar ke kaam aur logistcs smooth rehte hain",
+            "Dono khush hain ki koi chipak nahi raha",
+        ],
         riskFactors: [
             "Emotional desert—connected but not intimate",
             "Important issues never addressed",
             "Growing apart without noticing",
             "Vulnerability never practiced or deepened",
+        ],
+        riskFactorsHinglish: [
+            "Sukha rishta—naam ka saath, par dil se door",
+            "Zaroori baaton par kabhi charcha nahi hoti",
+            "Pata bhi nahi chalta kab alag ho gaye",
+            "Khul kar baat karna kabhi seekh hi nahi paate",
         ],
         growthOpportunities: [
             "Scheduling intentional connection time",
@@ -342,12 +552,20 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Learning to express needs verbally",
             "Building emotional vocabulary together",
         ],
+        growthOpportunitiesHinglish: [
+            "Milne aur baat karne ka time fix karna",
+            "Chhoti-chhoti baatein share karna shuru karna",
+            "Apni zarooratein bol kar batana",
+            "Emotions ke baare mein baat karna seekhna",
+        ],
     },
 
     'avoidant-disorganized': {
         stability: 2,
         summary: "The Space-Seeker and the Torn",
+        summaryHinglish: "Doori Chahne Wala aur Bikhra Hua",
         dynamics: "The avoidant partner's distance may initially feel safe for the disorganized partner's fear of engulfment. However, when the disorganized partner's anxious side emerges seeking connection, the avoidant partner withdraws further. Both partners feel misunderstood.",
+        dynamicsHinglish: "Avoidant partner ki doori shuru mein Disorganized partner ko safe lagti hai (kyunki unhe paas aane se darr lagta hai). Par jab Disorganized partner ko achanak pyaar chahiye hota hai, to Avoidant partner aur door ho jata hai. Dono ko lagta hai koi unhe samajh nahi raha.",
         keyConflicts: [
             "Disorganized partner's changing needs confuse avoidant partner",
             "Avoidant withdrawal triggers disorganized partner's abandonment fears",
@@ -355,10 +573,22 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Conflict can feel impossible to resolve",
             "Both may feel the relationship is 'too hard'",
         ],
+        keyConflictsHinglish: [
+            "Disorganized partner ki badalti needs Avoidant ko confuse karti hain",
+            "Avoidant ka door jana Disorganized ko darata hai",
+            "Khaayi kaise bharein, kisi ko nahi pata",
+            "Jhagda suljhana namumkin lagta hai",
+            "Dono ko lagta hai 'ye rishta bohat mushkil hai'",
+        ],
         strengths: [
             "Both understand the need for space",
             "Potential for very gradual trust-building",
             "When both in 'calm' states, harmony is possible",
+        ],
+        strengthsHinglish: [
+            "Dono space ki value samajhte hain",
+            "Dheere-dheere bharosa ban sakta hai",
+            "Jab dono shant hon, to achha waqt guzar sakta hai",
         ],
         riskFactors: [
             "Emotional needs perpetually unmet",
@@ -366,18 +596,32 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Both feeling lonely within the relationship",
             "Avoidant partner checking out entirely",
         ],
+        riskFactorsHinglish: [
+            "Pyaar ki zaroorat kabhi poori nahi hoti",
+            "Baat-cheet band ho jana",
+            "Saath reh kar bhi akela feel karna",
+            "Avoidant partner ka poori tarah alag ho jana",
+        ],
         growthOpportunities: [
             "Learning to read each other's cues",
             "Building predictable check-in rituals",
             "Both practicing staying present during discomfort",
             "Professional guidance strongly recommended",
         ],
+        growthOpportunitiesHinglish: [
+            "Ek doosre ke ishaare samajhna",
+            "Haal-chaal puchne ka routine banana",
+            "Jab uncomfortable lage tab bhi bhaagna nahi",
+            "Expert ki salah lena zaroori hai",
+        ],
     },
 
     'disorganized-disorganized': {
         stability: 1,
         summary: "The Storm Meets Storm",
+        summaryHinglish: "Toofan se Takraya Toofan",
         dynamics: "This is the most volatile pairing. Both partners experience the push-pull of wanting connection while fearing it, leading to unpredictable dynamics. Without significant self-awareness and likely professional support, the relationship can become chaotic and retraumatizing.",
+        dynamicsHinglish: "Ye sabse khatarnak jodi hai. Dono paas aana chahte hain par darte bhi hain. Iska nateeja bohat confusion aur drama hota hai. Bina samajhdaari aur therapy ke, ye rishta bohat chaotic ho sakta hai aur purane zakhmon ko kureed sakta hai.",
         keyConflicts: [
             "Extreme unpredictability from both sides",
             "Each partner's triggers activate the other's",
@@ -385,17 +629,36 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Conflict can escalate rapidly and destructively",
             "Neither has a 'calm anchor' to provide stability",
         ],
+        keyConflictsHinglish: [
+            "Dono taraf se kuch bhi ho sakta hai (unpredictable)",
+            "Ek ka gussa doosre ko bhadka deta hai",
+            "Bharosa karna aur tikana bohat mushkil",
+            "Jhagde bohat jaldi aur bure tareeke se badhte hain",
+            "Koi bhi shant nahi hai jo doosre ko sambhaal le",
+        ],
         strengths: [
             "Profound mutual understanding of inner conflict",
             "Neither judges the other's complexity",
             "When connected, intimacy can be deep",
             "Both know what it means to struggle",
         ],
+        strengthsHinglish: [
+            "Andar ki ladai ko dono samajhte hain",
+            "Koi kisi ko 'paagal' ya 'complex' bol kar judge nahi karta",
+            "Connection bana to bohat gehra hota hai",
+            "Dono ko pata hai ki dard kya hota hai",
+        ],
         riskFactors: [
             "Chaos becoming normalized",
             "Retraumatizing each other",
             "Relationship becoming destructive",
             "Neither able to provide stability for the other",
+        ],
+        riskFactorsHinglish: [
+            "Hungame ko hi 'normal' maan lena",
+            "Ek doosre ko phir se chot pahunchana",
+            "Rishta barbaadi ki taraf jana",
+            "Koi kisi ko sahara nahi de paata",
         ],
         growthOpportunities: [
             "Committing to individual therapy",
@@ -404,8 +667,29 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Celebrating small wins and stability moments",
             "Possibility of profound healing if both commit fully",
         ],
+        growthOpportunitiesHinglish: [
+            "Alag-alag therapy lena",
+            "Bahar (dost/family) se madad lena",
+            "Shant rehne ki techniques seekhna",
+            "Chhoti khushiyon aur shanti ke palon ko celebrate karna",
+            "Agar dono chahein to sabse gehri healing ho sakti hai",
+        ],
     },
 };
+export interface Strategy {
+    id: string;
+    title: string;
+    description: string;
+    howTo: string[];
+    forStyle?: AttachmentStyle | 'both';
+    category: 'communication' | 'conflict' | 'intimacy' | 'self-care' | 'trust' | 'growth';
+}
+
+export interface PairingStrategies {
+    forPartner1: Strategy[];
+    forPartner2: Strategy[];
+    forCouple: Strategy[];
+}
 
 // Strategies organized by attachment style and category
 export const strategiesLibrary: Strategy[] = [

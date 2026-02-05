@@ -1,12 +1,43 @@
 'use client';
 
+import { useState } from 'react';
+import { FileText, ArrowRight, Brain, Activity, ClipboardCheck, Scale, Shield, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { FileText, ArrowRight, Brain, Activity, ClipboardCheck, Scale, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import AuthModal from '@/components/auth/AuthModal';
+import { supabase } from '@/lib/supabase';
+import { useEffect } from 'react';
+
+import UserHeaderButton from '@/components/UserHeaderButton';
 
 export default function HomePage() {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAnalyzeClick = () => {
+    if (user) {
+      router.push('/questionnaire');
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#F9F9F7] text-stone-900 font-sans">
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+
       {/* Clinical Header */}
       <header className="border-b border-rose-100 bg-white py-4 px-6 md:px-12 flex justify-between items-center sticky top-0 z-50">
         <div className="flex items-center gap-3">
@@ -15,9 +46,13 @@ export default function HomePage() {
           </div>
           <span className="font-serif font-bold text-lg tracking-tight text-rose-900">LoveMap</span>
         </div>
+
+        <div className="flex items-center gap-4">
+          {/* User Profile / Login */}
+          <UserHeaderButton onLoginClick={() => setIsAuthModalOpen(true)} />
+        </div>
       </header>
 
-      {/* Hero Section */}
       {/* Hero Section */}
       <section className="px-6 py-20 md:py-32 max-w-5xl mx-auto text-center">
         <motion.h1
@@ -47,10 +82,13 @@ export default function HomePage() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-col md:flex-row gap-4 justify-center items-center mb-16"
         >
-          <Link href="/questionnaire" className="btn-clinical text-lg px-8 py-4 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all bg-rose-600 border-rose-600 text-white hover:bg-rose-700">
-            Analyze My Relationship Now
+          <button
+            onClick={handleAnalyzeClick}
+            className="btn-clinical text-lg px-8 py-4 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all bg-rose-600 border-rose-600 text-white hover:bg-rose-700 flex items-center gap-2"
+          >
+            {user ? 'Start Assessment' : 'Analyze My Relationship Now'}
             <ArrowRight className="w-5 h-5" />
-          </Link>
+          </button>
           <div className="text-sm text-stone-500 font-medium">
             <span className="text-rose-500">●</span> Free for a limited time
           </div>

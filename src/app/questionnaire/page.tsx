@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle, Brain, Activity, FileText } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
     scenarioQuestions,
     personalizeScenario,
@@ -12,12 +13,15 @@ import {
 } from '@/lib/data/scenario-questions';
 import { v4 as uuidv4 } from 'uuid';
 import { saveAssessment, getCoupleData } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
+import { DevMode } from '@/components/DevMode';
 
 type Step = 'intro' | 'your-name' | 'partner-name' | 'questions' | 'complete';
 
 function QuestionnaireContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { t, language, setLanguage } = useLanguage();
     const [step, setStep] = useState<Step>('intro');
     const [yourName, setYourName] = useState('');
     const [partnerName, setPartnerName] = useState('');
@@ -28,49 +32,63 @@ function QuestionnaireContent() {
     const [isPartner2, setIsPartner2] = useState(false);
     const [partner1Name, setPartner1Name] = useState<string>('');
     const [currentDate, setCurrentDate] = useState<string>('');
+    const [userId, setUserId] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data }) => {
+            if (data?.user) {
+                setUserId(data.user.id);
+            }
+        });
+    }, []);
 
     useEffect(() => {
         setCurrentDate(new Date().toLocaleDateString());
     }, []);
 
     useEffect(() => {
-        const urlCoupleId = searchParams.get('couple');
+        const urlCoupleId = searchParams.get('couple') || searchParams.get('coupleId');
+        const urlLang = searchParams.get('lang');
+
+        if (urlLang === 'hinglish' || urlLang === 'en') {
+            setLanguage(urlLang);
+        }
 
         if (urlCoupleId) {
             setCoupleId(urlCoupleId);
             setIsPartner2(true);
-            const p1Data = localStorage.getItem(`lovemap_couple_${urlCoupleId}_partner1`);
-            if (p1Data) {
-                const parsed = JSON.parse(p1Data);
-                setPartner1Name(parsed.yourName);
-                setPartnerName(parsed.yourName);
-            }
 
             // Fetch from DB for cross-device support
             getCoupleData(urlCoupleId).then(couple => {
                 if (couple && couple.partner1) {
                     setPartner1Name(couple.partner1.yourName);
-                    setPartnerName(couple.partner1.yourName);
-                    // Sync to local storage
-                    localStorage.setItem(`lovemap_couple_${urlCoupleId}_partner1`, JSON.stringify(couple.partner1));
+
+                    // Pre-fill names for Partner 2 using Partner 1's data
+                    if (couple.partner1.yourName) setPartnerName(couple.partner1.yourName);
+                    if (couple.partner1.partnerName) setYourName(couple.partner1.partnerName);
+
+                    // If we have both names, skip the intro and name entry steps
+                    if (couple.partner1.yourName && couple.partner1.partnerName) {
+                        setStep('questions');
+                    }
                 }
             });
         } else {
-            const existingCoupleId = localStorage.getItem('lovemap_current_couple');
-            if (existingCoupleId) {
-                setCoupleId(existingCoupleId);
-            } else {
-                const newCoupleId = uuidv4().slice(0, 8);
-                setCoupleId(newCoupleId);
-                localStorage.setItem('lovemap_current_couple', newCoupleId);
-            }
+            const newCoupleId = uuidv4().slice(0, 8);
+            setCoupleId(newCoupleId);
         }
-    }, [searchParams]);
+    }, [searchParams, setLanguage]);
 
     const question = scenarioQuestions[currentQuestion];
     const progress = ((currentQuestion + 1) / scenarioQuestions.length) * 100;
+
+    // Select content based on language
+    const scenarioText = language === 'hinglish' && question?.scenarioHinglish
+        ? question.scenarioHinglish
+        : question?.scenario || '';
+
     const personalizedScenario = question
-        ? personalizeScenario(question.scenario, partnerName || 'Subject B')
+        ? personalizeScenario(scenarioText, partnerName || 'Subject B')
         : '';
 
     const handleAnswer = (optionId: string) => {
@@ -95,18 +113,38 @@ function QuestionnaireContent() {
             };
 
             if (isPartner2) {
-                localStorage.setItem(`lovemap_couple_${coupleId}_partner2`, JSON.stringify(assessmentData));
-                localStorage.setItem('lovemap_partner2', JSON.stringify(assessmentData));
-                saveAssessment(coupleId, 'partner2', assessmentData);
+                saveAssessment(coupleId, 'partner2', assessmentData, userId);
             } else {
-                localStorage.setItem(`lovemap_couple_${coupleId}_partner1`, JSON.stringify(assessmentData));
-                localStorage.setItem('lovemap_partner1', JSON.stringify(assessmentData));
-                localStorage.setItem('lovemap_current_couple', coupleId);
-                saveAssessment(coupleId, 'partner1', assessmentData);
+                saveAssessment(coupleId, 'partner1', assessmentData, userId);
             }
 
             setStep('complete');
         }
+    };
+
+    const handleAutoFill = (newAnswers: Record<number, string>) => {
+        setAnswers(newAnswers);
+
+        // Auto-complete the assessment
+        const scenarioResult = calculateScenarioResult(newAnswers);
+        setResult(scenarioResult);
+
+        const assessmentData = {
+            coupleId,
+            yourName: yourName || 'Dev User',
+            partnerName: partnerName || 'Dev Partner',
+            answers: newAnswers,
+            result: scenarioResult,
+            completedAt: new Date().toISOString(),
+        };
+
+        if (isPartner2) {
+            saveAssessment(coupleId, 'partner2', assessmentData, userId);
+        } else {
+            saveAssessment(coupleId, 'partner1', assessmentData, userId);
+        }
+
+        setStep('complete');
     };
 
     const goBack = () => {
@@ -128,30 +166,30 @@ function QuestionnaireContent() {
                     >
                         <div className="report-card mb-8 bg-white border-rose-100 shadow-lg">
                             <div className="border-b border-rose-100 pb-4 mb-6 flex justify-between items-center">
-                                <h1 className="text-xl font-serif font-bold text-rose-900">LoveMap Assessment: Introduction</h1>
-                                <span className="text-xs font-mono text-rose-400">LOVEMAP</span>
+                                <h1 className="text-xl font-serif font-bold text-rose-900">{t('intro.title')}</h1>
+                                <span className="text-xs font-mono text-rose-400">{t('intro.subtitle')}</span>
                             </div>
 
                             <p className="text-stone-600 mb-6 leading-relaxed font-serif">
                                 {isPartner2 && partner1Name
-                                    ? `Subject A (${partner1Name}) has initiated a dyadic attachment assessment. You are invited to complete the corresponding inventory.`
-                                    : "This instrument is designed to evaluate attachment patterns in close relationships. You will be presented with 20 hypothetical scenarios."}
+                                    ? t('intro.desc_partner').replace('{{name}}', partner1Name)
+                                    : t('intro.desc_default')}
                             </p>
 
                             <div className="bg-rose-50 border border-rose-100 p-6 mb-8 rounded-xl">
-                                <h3 className="font-bold text-sm mb-4 uppercase tracking-wide text-rose-800">Instructions</h3>
+                                <h3 className="font-bold text-sm mb-4 uppercase tracking-wide text-rose-800">{t('intro.instructions')}</h3>
                                 <ul className="space-y-3 text-sm text-stone-600 font-mono">
                                     <li className="flex gap-3">
                                         <span className="text-rose-400">01.</span>
-                                        <span>Read each scenario carefully.</span>
+                                        <span>{t('intro.step1')}</span>
                                     </li>
                                     <li className="flex gap-3">
                                         <span className="text-rose-400">02.</span>
-                                        <span>Select the response that best matches your instinctive reaction.</span>
+                                        <span>{t('intro.step2')}</span>
                                     </li>
                                     <li className="flex gap-3">
                                         <span className="text-rose-400">03.</span>
-                                        <span>There are no correct or incorrect responses.</span>
+                                        <span>{t('intro.step3')}</span>
                                     </li>
                                 </ul>
                             </div>
@@ -160,7 +198,7 @@ function QuestionnaireContent() {
                                 onClick={() => setStep('your-name')}
                                 className="btn-clinical w-full"
                             >
-                                Proceed to Intake
+                                {t('intro.btn_start')}
                                 <ArrowRight className="w-4 h-4" />
                             </button>
                         </div>
@@ -178,19 +216,19 @@ function QuestionnaireContent() {
                     >
                         <div className="report-card bg-white border-rose-100 shadow-lg">
                             <div className="mb-8">
-                                <span className="text-xs font-mono text-rose-400 block mb-2">SECTION 1.1</span>
-                                <h2 className="text-2xl font-serif font-bold text-rose-900">Subject Identification</h2>
+                                <span className="text-xs font-mono text-rose-400 block mb-2">{t('id.section1')}</span>
+                                <h2 className="text-2xl font-serif font-bold text-rose-900">{t('id.title_subject')}</h2>
                             </div>
 
                             <div className="mb-8">
                                 <label className="block text-xs font-bold uppercase tracking-wide mb-2 text-stone-500">
-                                    First Name
+                                    {t('id.label_name')}
                                 </label>
                                 <input
                                     type="text"
                                     value={yourName}
                                     onChange={(e) => setYourName(e.target.value)}
-                                    placeholder="Enter subject name"
+                                    placeholder={t('id.placeholder_name')}
                                     className="clinical-input text-xl border-rose-200 focus:border-rose-500"
                                     onKeyDown={(e) => e.key === 'Enter' && yourName.trim() && setStep('partner-name')}
                                     autoFocus
@@ -199,14 +237,14 @@ function QuestionnaireContent() {
 
                             <div className="flex justify-between items-center">
                                 <button onClick={() => setStep('intro')} className="text-sm text-stone-500 hover:text-rose-600 font-mono transition-colors">
-                                    [BACK]
+                                    {t('id.btn_back')}
                                 </button>
                                 <button
                                     onClick={() => setStep('partner-name')}
                                     disabled={!yourName.trim()}
                                     className="btn-clinical disabled:opacity-50 disabled:shadow-none"
                                 >
-                                    Next Section
+                                    {t('id.btn_next')}
                                     <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
@@ -225,25 +263,25 @@ function QuestionnaireContent() {
                     >
                         <div className="report-card bg-white border-rose-100 shadow-lg">
                             <div className="mb-8">
-                                <span className="text-xs font-mono text-rose-400 block mb-2">SECTION 1.2</span>
-                                <h2 className="text-2xl font-serif font-bold text-rose-900">Partner Identification</h2>
+                                <span className="text-xs font-mono text-rose-400 block mb-2">{t('id.section2')}</span>
+                                <h2 className="text-2xl font-serif font-bold text-rose-900">{t('id.title_partner')}</h2>
                             </div>
 
                             <p className="text-stone-600 mb-6 text-sm">
                                 {isPartner2
-                                    ? `Please confirm the name of Subject A.`
-                                    : "Please identify the partner involved in this assessment."}
+                                    ? t('id.desc_partner')
+                                    : t('id.desc_default')}
                             </p>
 
                             <div className="mb-8">
                                 <label className="block text-xs font-bold uppercase tracking-wide mb-2 text-stone-500">
-                                    Partner Name
+                                    {t('id.label_partner')}
                                 </label>
                                 <input
                                     type="text"
                                     value={partnerName}
                                     onChange={(e) => setPartnerName(e.target.value)}
-                                    placeholder="Enter partner name"
+                                    placeholder={t('id.placeholder_partner')}
                                     className="clinical-input text-xl border-rose-200 focus:border-rose-500"
                                     onKeyDown={(e) => e.key === 'Enter' && partnerName.trim() && setStep('questions')}
                                     autoFocus
@@ -252,14 +290,14 @@ function QuestionnaireContent() {
 
                             <div className="flex justify-between items-center">
                                 <button onClick={() => setStep('your-name')} className="text-sm text-stone-500 hover:text-rose-600 font-mono transition-colors">
-                                    [BACK]
+                                    {t('id.btn_back')}
                                 </button>
                                 <button
                                     onClick={() => setStep('questions')}
                                     disabled={!partnerName.trim()}
                                     className="btn-clinical disabled:opacity-50 disabled:shadow-none"
                                 >
-                                    Begin Inventory
+                                    {t('id.btn_begin')}
                                     <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
@@ -277,14 +315,14 @@ function QuestionnaireContent() {
                         className="max-w-3xl mx-auto"
                     >
                         <div className="flex justify-between items-end mb-6 font-mono text-xs text-rose-400 border-b border-rose-200 pb-2">
-                            <span>ITEM {currentQuestion + 1} / {scenarioQuestions.length}</span>
-                            <span>PROGRESS: {Math.round(progress)}%</span>
+                            <span>{t('q.item')} {currentQuestion + 1} / {scenarioQuestions.length}</span>
+                            <span>{t('q.progress')}: {Math.round(progress)}%</span>
                         </div>
 
                         <div className="report-card mb-8 bg-white border-rose-100 shadow-lg">
                             <div className="mb-2">
                                 <span className="inline-block px-2 py-1 bg-rose-50 text-rose-600 text-xs font-mono uppercase tracking-wider mb-4 rounded-full">
-                                    Category: {question.category}
+                                    {t('q.category')} {question.category}
                                 </span>
                             </div>
 
@@ -295,6 +333,10 @@ function QuestionnaireContent() {
                             <div className="space-y-4">
                                 {question.options.map((option) => {
                                     const isSelected = answers[question.id] === option.id;
+                                    const optionText = language === 'hinglish' && option.textHinglish
+                                        ? option.textHinglish
+                                        : option.text;
+
                                     return (
                                         <button
                                             key={option.id}
@@ -310,7 +352,7 @@ function QuestionnaireContent() {
                                                     {option.id.replace(/[0-9]/g, '').toUpperCase()}
                                                 </div>
                                                 <span className={`text-sm md:text-base leading-relaxed ${isSelected ? 'text-white' : 'text-stone-700'}`}>
-                                                    {option.text}
+                                                    {optionText}
                                                 </span>
                                             </div>
                                         </button>
@@ -325,14 +367,14 @@ function QuestionnaireContent() {
                                 disabled={currentQuestion === 0}
                                 className="text-sm text-stone-500 hover:text-rose-600 font-mono disabled:opacity-30 transition-colors"
                             >
-                                [PREVIOUS]
+                                {t('q.btn_prev')}
                             </button>
                             <button
                                 onClick={handleNext}
                                 disabled={!answers[question.id]}
                                 className="btn-clinical disabled:opacity-50 disabled:shadow-none"
                             >
-                                {currentQuestion < scenarioQuestions.length - 1 ? 'Next Question' : 'Complete Assessment'}
+                                {currentQuestion < scenarioQuestions.length - 1 ? t('q.btn_next') : t('q.btn_complete')}
                                 <ArrowRight className="w-4 h-4" />
                             </button>
                         </div>
@@ -352,15 +394,15 @@ function QuestionnaireContent() {
                                 <CheckCircle className="w-8 h-8 text-rose-600" />
                             </div>
 
-                            <h2 className="text-2xl font-serif font-bold mb-2 text-rose-900">Assessment Complete</h2>
+                            <h2 className="text-2xl font-serif font-bold mb-2 text-rose-900">{t('done.title')}</h2>
                             <p className="text-stone-600 mb-8 font-mono text-sm">
-                                DATA PROCESSING FINALIZED
+                                {t('done.desc')}
                             </p>
 
                             {result && (
                                 <div className="bg-rose-50 border border-rose-100 p-6 mb-8 text-left rounded-xl">
                                     <div className="flex justify-between items-center mb-4 border-b border-rose-200 pb-2">
-                                        <span className="text-xs font-mono font-bold text-rose-800">PRELIMINARY CLASSIFICATION</span>
+                                        <span className="text-xs font-mono font-bold text-rose-800">{t('done.classification')}</span>
                                         <Activity className="w-4 h-4 text-rose-400" />
                                     </div>
                                     <div className="text-xl font-serif font-bold capitalize mb-4 text-rose-900">
@@ -387,14 +429,14 @@ function QuestionnaireContent() {
                                 onClick={() => router.push(`/results?couple=${coupleId}`)}
                                 className="btn-clinical w-full"
                             >
-                                Generate Diagnostic Report
+                                {t('done.btn_report')}
                                 <ArrowRight className="w-4 h-4" />
                             </button>
 
                             <p className="mt-6 text-xs text-stone-400 font-mono">
                                 {isPartner2
-                                    ? "Merging data with Subject A..."
-                                    : "Report ready for viewing."}
+                                    ? t('done.processing')
+                                    : t('done.ready')}
                             </p>
                         </div>
                     </motion.div>
@@ -409,16 +451,26 @@ function QuestionnaireContent() {
                     <div className="w-8 h-8 bg-rose-600 flex items-center justify-center text-white rounded-full">
                         <Brain className="w-4 h-4" />
                     </div>
-                    <span className="font-serif font-bold text-rose-900">LoveMap</span>
+                    <span className="font-serif font-bold text-rose-900">{t('app.title')}</span>
                 </div>
-                <div className="text-xs font-mono text-rose-400">
-                    {currentDate}
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => setLanguage(language === 'en' ? 'hinglish' : 'en')}
+                        className="text-xs font-mono px-3 py-1 rounded-full border border-rose-200 hover:bg-rose-50 transition-colors uppercase"
+                    >
+                        {language === 'en' ? '🇮🇳 Hinglish' : '🇺🇸 English'}
+                    </button>
+                    <div className="text-xs font-mono text-rose-400">
+                        {currentDate}
+                    </div>
                 </div>
             </header>
 
             <AnimatePresence mode="wait">
                 {renderStep()}
             </AnimatePresence>
+
+            <DevMode onFillAnswers={handleAutoFill} />
         </main>
     );
 }
