@@ -20,6 +20,19 @@ export interface PairingAnalysis {
     riskFactorsHinglish?: string[];
     growthOpportunities: string[];
     growthOpportunitiesHinglish?: string[];
+    conflictScripts?: ConflictScripts;
+}
+
+export interface ConflictScripts {
+    partner1: PartnerConflictScripts;
+    partner2: PartnerConflictScripts;
+}
+
+export interface PartnerConflictScripts {
+    selfSoothing: { en: string; hinglish: string };
+    boundary: { en: string; hinglish: string };
+    repair: { en: string; hinglish: string };
+    reassurance: { en: string; hinglish: string };
 }
 
 // ... (keep Strategy interface and others unchanged)
@@ -154,12 +167,50 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Ek doosre ki personal growth mein madad karein",
             "Saath mil kar kuch bada karein (goals/dreams)",
         ],
+        conflictScripts: {
+            partner1: {
+                selfSoothing: {
+                    en: "I am safe. We can solve this together.",
+                    hinglish: "Main safe hoon. Hum ise saath mil kar suljha lenge."
+                },
+                boundary: {
+                    en: "I need a moment to think before we continue.",
+                    hinglish: "Mujhe thoda sochne ka waqt chahiye aage baat karne se pehle."
+                },
+                repair: {
+                    en: "I'm sorry I got defensive. I want to understand your point.",
+                    hinglish: "Sorry main defensive ho gaya tha. Main tumhari baat samajhna chahta hoon."
+                },
+                reassurance: {
+                    en: "We are a team. We will get through this.",
+                    hinglish: "Hum ek team hain. Hum isse nikal lenge."
+                }
+            },
+            partner2: {
+                selfSoothing: {
+                    en: "My partner loves me, even when we disagree.",
+                    hinglish: "Mera partner mujhse pyaar karta hai, bhale hi humari behas ho."
+                },
+                boundary: {
+                    en: "Let's take a break and come back in 20 minutes.",
+                    hinglish: "Chalo break lete hain aur 20 minute baad baat karenge."
+                },
+                repair: {
+                    en: "I appreciate you listening to me.",
+                    hinglish: "Meri baat sunne ke liye shukriya."
+                },
+                reassurance: {
+                    en: "I'm right here with you.",
+                    hinglish: "Main yahin hoon tumhare saath."
+                }
+            }
+        },
     },
 
     'secure-anxious': {
         stability: 4,
         summary: "The Anchor and the Yearner",
-        summaryHinglish: "Anchor aur Chahat Rakhne Wala",
+        summaryHinglish: "The Anchor and the Yearner",
         dynamics: "The secure partner can provide a stable, reassuring presence that helps the anxious partner develop more security over time. However, the secure partner must be patient with reassurance needs while setting healthy boundaries. This pairing has strong potential for the anxious partner to 'earn' secure attachment.",
         dynamicsHinglish: "Secure partner ek mazboot sahara (anchor) banta hai jo Anxious partner ko shanti aur bharosa deta hai. Secure partner ko thoda sabr rakhna padta hai jab partner ko tasalli chahiye ho. Agar sahi se handle kiya jaye, to Anxious partner bhi dheere-dheere Secure ban sakta hai.",
         keyConflicts: [
@@ -171,7 +222,7 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
         keyConflictsHinglish: [
             "Anxious partner ko Secure partner se zyada tasalli chahiye hoti hai",
             "Secure partner kabhi-kabhi emotional pressure feel kar sakta hai",
-            "Message/Call ka reply late aane par tension hona",
+            "Message/Call ka reply late aane par anxious partner ko tension hona",
             "Secure partner ke 'me-time' ko Anxious partner rejection samajh leta hai",
         ],
         strengths: [
@@ -193,7 +244,7 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
         ],
         riskFactorsHinglish: [
             "Tasalli dete-dete Secure partner ka thak jana",
-            "Anxious partner ka darr ke maare pichhe pad jana",
+            "Anxious partner ka darr ke maare ki ye mujhe chor ke chale na jaye isliye pichhe pad jana",
             "Preshan ho kar Secure partner ka door ho jana",
         ],
         growthOpportunities: [
@@ -204,10 +255,48 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
         ],
         growthOpportunitiesHinglish: [
             "Anxious partner ka khud ko shant karna seekhna",
-            "Secure partner ka ghabrahat ko behtar samajhna",
+            "Secure partner ka anxious partner ki ghabrahat ko behtar samajhna",
             "Tasalli dene ke liye fix tareeke banana",
             "Aise rituals banana jisse tension kam ho (jaise roz goodnight call)",
         ],
+        conflictScripts: {
+            partner1: { // Secure
+                selfSoothing: {
+                    en: "Their anxiety is not an attack on me. I can stay calm.",
+                    hinglish: "Unki ghabrahat mujh par hamla nahi hai. Main shant reh sakta/sakti hoon."
+                },
+                boundary: {
+                    en: "I love you, but I can't talk when you're shouting. Let's take 10 mins.",
+                    hinglish: "Main tumse pyaar karta hoon, par chillate hue baat nahi kar sakta. 10 min rukte hain."
+                },
+                repair: {
+                    en: "I see you're hurting. I'm here.",
+                    hinglish: "Main samajh sakta hoon tumhe dukh ho raha hai. Main yahin hoon."
+                },
+                reassurance: {
+                    en: "I am not leaving. We are okay.",
+                    hinglish: "Main kahin nahi ja raha. Hum theek hain."
+                }
+            },
+            partner2: { // Anxious
+                selfSoothing: {
+                    en: "They need space, not because they don't love me, but to think.",
+                    hinglish: "Unhe space chahiye, isliye nahi ki pyaar nahi karte, balki sochne ke liye."
+                },
+                boundary: {
+                    en: "I need reassurance right now, not logic.",
+                    hinglish: "Mujhe abhi tasalli chahiye, logic nahi."
+                },
+                repair: {
+                    en: "I got scared and overwhelmed. Sorry I lashed out.",
+                    hinglish: "Main darr gaya/gayi tha/thi aur ghabra gaya/gayi tha/thi. Sorry maine gussa kiya."
+                },
+                reassurance: {
+                    en: "I trust you. I just got triggered.",
+                    hinglish: "Mujhe tumpe bharosa hai. Bas main trigger ho gaya/gayi tha/thi."
+                }
+            }
+        },
     },
 
     'secure-avoidant': {
@@ -257,11 +346,49 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Avoidant partner developing emotional vocabulary",
         ],
         growthOpportunitiesHinglish: [
-            "Avoidant partner ka dheere-dheere khulna practice karna",
+            "Avoidant partner ka dheere-dheere khulne ki practice karna",
             "Secure partner ka pyaar ke alag tareekon (actions) ko samajhna",
             "Bolne aur karne wale pyaar ke beech pul banana",
             "Avoidant partner ka apni feelings ke liye shabd dhoondna",
         ],
+        conflictScripts: {
+            partner1: { // Secure
+                selfSoothing: {
+                    en: "His distance is his safety, not my rejection.",
+                    hinglish: "Uska door jana uski safety hai, mera rejection nahi."
+                },
+                boundary: {
+                    en: "I feel lonely when you shut down. Can we talk later?",
+                    hinglish: "Jab tum chup ho jate ho to mujhe akela feel hota hai. Kya baad mein baat karein?"
+                },
+                repair: {
+                    en: "I didn't mean to pressure you. Take your time.",
+                    hinglish: "Mera maksad pressure dalna nahi tha. Apna time lo."
+                },
+                reassurance: {
+                    en: "I respect your need for space. I'll be here.",
+                    hinglish: "Main tumhare space ki izzat karta hoon. Main yahin milunga."
+                }
+            },
+            partner2: { // Avoidant
+                selfSoothing: {
+                    en: "I am not trapped. I can take a break.",
+                    hinglish: "Main phasa nahi hoon. Main break le sakta hoon."
+                },
+                boundary: {
+                    en: "I need an hour alone to decompress.",
+                    hinglish: "Mujhe ek ghanta akela rehna hai shant hone ke liye."
+                },
+                repair: {
+                    en: "I shut down because I was overwhelmed. I'm back now.",
+                    hinglish: "Main chup ho gaya tha kyunki main ghabra gaya tha. Ab main wapas aa gaya hoon."
+                },
+                reassurance: {
+                    en: "I love you, I just needed quiet.",
+                    hinglish: "Main tumse pyaar karta hoon, bas mujhe shanti chahiye thi."
+                }
+            }
+        },
     },
 
     'secure-disorganized': {
@@ -301,7 +428,7 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Trauma responses being triggered during intimacy",
         ],
         riskFactorsHinglish: [
-            "Mood swings se Secure partner ka thak jana",
+            "Disorganised partner ke mood swings se secure partner ka thak jana",
             "Disorganized partner ka darr ke karan rishta kharab karna",
             "Secure partner ka 'caretaker' ya 'nurse' ban jana",
             "Pyaar ke waqt purane darr ka samne aana",
@@ -318,6 +445,44 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Rishte ka naya aur positive tareeka seekhna",
             "Therapy ya expert ki madad se jaldi sudhaar",
         ],
+        conflictScripts: {
+            partner1: { // Secure
+                selfSoothing: {
+                    en: "This storm will pass. I am the rock.",
+                    hinglish: "Ye toofan guzar jayega. Main mazboot hoon."
+                },
+                boundary: {
+                    en: "I can't continue this conversation if it's abusive.",
+                    hinglish: "Agar baat badtameezi par aayi to main baat nahi karunga."
+                },
+                repair: {
+                    en: "Let's restart. I love you.",
+                    hinglish: "Chalo phir se shuru karte hain. I love you."
+                },
+                reassurance: {
+                    en: "You are safe with me. I'm not going to hurt you.",
+                    hinglish: "Tum mere saath safe ho. Main tumhe chot nahi pahunchaunga."
+                }
+            },
+            partner2: { // Disorganized
+                selfSoothing: {
+                    en: "He is not my past. He is safe.",
+                    hinglish: "Ye mera ateet nahi hai. Ye safe hai."
+                },
+                boundary: {
+                    en: "I feel chaotic. Please give me space but don't leave.",
+                    hinglish: "Mera dimaag ulajh raha hai. Thoda space do, par mujhe chhod ke mat jao."
+                },
+                repair: {
+                    en: "I pushed you away because I was scared. Sorry.",
+                    hinglish: "Maine tumhe door kiya kyunki main darr gaya/gayi tha/thi. Sorry."
+                },
+                reassurance: {
+                    en: "Thank you for staying. I care about you.",
+                    hinglish: "Rukne ke liye shukriya. Mujhe tumhari fikr hai."
+                }
+            }
+        },
     },
 
     'anxious-anxious': {
@@ -378,6 +543,44 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Rishte ki mazbooti par bharosa paida karna",
             "Tasalli ke liye aasaan tareeke dhoondna",
         ],
+        conflictScripts: {
+            partner1: { // Anxious
+                selfSoothing: {
+                    en: "We're just scared. We love each other.",
+                    hinglish: "Hum bas dare hue hain. Hum pyaar karte hain."
+                },
+                boundary: {
+                    en: "We are both spiraling. Let's pause for 5 mins.",
+                    hinglish: "Hum dono ghabra rahe hain. 5 minute rukte hain."
+                },
+                repair: {
+                    en: "I'm sorry I fed into the panic. Let's breathe.",
+                    hinglish: "Sorry maine panic badha diya. Saans lete hain."
+                },
+                reassurance: {
+                    en: "We are not breaking up. We are just fighting.",
+                    hinglish: "Hum alag nahi ho rahe. Bas ladayi ho rahi hai."
+                }
+            },
+            partner2: { // Anxious
+                selfSoothing: {
+                    en: "This feeling is temporary. It will pass.",
+                    hinglish: "Ye feeling temporary hai. Guzar jayegi."
+                },
+                boundary: {
+                    en: "I need to calm down before I say something hurtful.",
+                    hinglish: "Kuch galat bolne se pehle mujhe shant hona hoga."
+                },
+                repair: {
+                    en: "I love you. Let's hug.",
+                    hinglish: "I love you. Gale lagte hain."
+                },
+                reassurance: {
+                    en: "You are my person. I am yours.",
+                    hinglish: "Tum mere ho. Main tumhara hoon."
+                }
+            }
+        },
     },
 
     'anxious-avoidant': {
@@ -440,6 +643,44 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Khandani patterns ko todna",
             "Baat karne ka wo tareeka seekhna jo pehle nahi aata tha",
         ],
+        conflictScripts: {
+            partner1: { // Anxious
+                selfSoothing: {
+                    en: "I am okay on my own for a bit.",
+                    hinglish: "Main thodi der akela theek hoon."
+                },
+                boundary: {
+                    en: "I can give you space, but please tell me when you'll be back.",
+                    hinglish: "Main space de sakta hoon, par bata do kab wapas aaoge."
+                },
+                repair: {
+                    en: "I panicked and chased you. Sorry.",
+                    hinglish: "Main darr gaya tha aur pichha kiya. Sorry."
+                },
+                reassurance: {
+                    en: "Take your time. I'll be doing my own thing.",
+                    hinglish: "Time lo. Main apna kaam kar raha hoon."
+                }
+            },
+            partner2: { // Avoidant
+                selfSoothing: {
+                    en: "They want connection, not to control me.",
+                    hinglish: "Wo pyaar chahte hain, mujh par kabza nahi."
+                },
+                boundary: {
+                    en: "I am feeling flooded. I need a timeout.",
+                    hinglish: "Mera dimaag bhar gaya hai. Break chahiye."
+                },
+                repair: {
+                    en: "Sorry I disappeared. I needed to reset.",
+                    hinglish: "Sorry main gayab ho gaya. Mujhe reset hona tha."
+                },
+                reassurance: {
+                    en: "We are good. I just need to recharge.",
+                    hinglish: "Hum theek hain. Bas mujhe recharge hona hai."
+                }
+            }
+        },
     },
 
     'anxious-disorganized': {
@@ -498,6 +739,44 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Apne emotions ko control karna seekhna",
             "Expert ki madad se jaldi improvement",
         ],
+        conflictScripts: {
+            partner1: { // Anxious
+                selfSoothing: {
+                    en: "Their mood swing is not my fault.",
+                    hinglish: "Unka mood swing meri galti nahi hai."
+                },
+                boundary: {
+                    en: "Please don't push me away like that. It hurts.",
+                    hinglish: "Aise dhakka mat maaro. Dard hota hai."
+                },
+                repair: {
+                    en: "I won't overwhelm you. Let's take it slow.",
+                    hinglish: "Main tumpe bojh nahi banunga. Dheere chalte hain."
+                },
+                reassurance: {
+                    en: "I am consistent. I am here.",
+                    hinglish: "Main hamesha waisa hi hoon. Main yahin hoon."
+                }
+            },
+            partner2: { // Disorganized
+                selfSoothing: {
+                    en: "It is safe to be close.",
+                    hinglish: "Paas aana safe hai."
+                },
+                boundary: {
+                    en: "I feel suffocated. Back up a little please.",
+                    hinglish: "Ghutan ho rahi hai. Thoda pichhe hato please."
+                },
+                repair: {
+                    en: "My fear took over. I want to be close.",
+                    hinglish: "Mera darr haavi ho gaya tha. Main paas aana chahta/chahti hoon."
+                },
+                reassurance: {
+                    en: "I'm not leaving, I'm just struggling.",
+                    hinglish: "Main ja nahi raha/rahi, bas pareshan hoon."
+                }
+            }
+        },
     },
 
     'avoidant-avoidant': {
@@ -558,6 +837,44 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Apni zarooratein bol kar batana",
             "Emotions ke baare mein baat karna seekhna",
         ],
+        conflictScripts: {
+            partner1: { // Avoidant
+                selfSoothing: {
+                    en: "It's okay to need connection. It doesn't make me weak.",
+                    hinglish: "Connection chahiye hona okay hai. Ye kamzori nahi hai."
+                },
+                boundary: {
+                    en: "We are ignoring the issue. Let's actually talk about it.",
+                    hinglish: "Hum baat ko taal rahe hain. Chalo baat karte hain."
+                },
+                repair: {
+                    en: "I withdrew again. I want to try to stay present.",
+                    hinglish: "Main phir pichhe hat gaya. Main rukna chahta hoon."
+                },
+                reassurance: {
+                    en: "I value our relationship, even if I don't say it often.",
+                    hinglish: "Main rishte ki kadar karta hoon, bhale hi kam bolta hoon."
+                }
+            },
+            partner2: { // Avoidant
+                selfSoothing: {
+                    en: "I can express my feelings without losing myself.",
+                    hinglish: "Main apni feelings bata sakta hoon bina khud ko khoye."
+                },
+                boundary: {
+                    en: "I can't read your mind. Please tell me.",
+                    hinglish: "Main mann ki baat nahi padh sakta. Please batao."
+                },
+                repair: {
+                    en: "I want to be closer, even if it's scary.",
+                    hinglish: "Main paas aana chahta hoon, bhale hi darr lag raha ho."
+                },
+                reassurance: {
+                    en: "You matter to me.",
+                    hinglish: "Tum mere liye mayne rakhte ho."
+                }
+            }
+        },
     },
 
     'avoidant-disorganized': {
@@ -614,6 +931,44 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Jab uncomfortable lage tab bhi bhaagna nahi",
             "Expert ki salah lena zaroori hai",
         ],
+        conflictScripts: {
+            partner1: { // Avoidant
+                selfSoothing: {
+                    en: "Their chaos doesn't have to consume me.",
+                    hinglish: "Unka hungama mujhe khatam nahi karega."
+                },
+                boundary: {
+                    en: "I cannot help you when you are screaming.",
+                    hinglish: "Jab tum chilla rahe ho main madad nahi kar sakta."
+                },
+                repair: {
+                    en: "I'm sorry I checked out. It was too much.",
+                    hinglish: "Sorry main dhyan nahi de raha tha. Bohat zyada ho gaya tha."
+                },
+                reassurance: {
+                    en: "I'm not abandoning you. I'm just sitting here quietly.",
+                    hinglish: "Main tumhe chhod nahi raha. Bas chup baitha hoon."
+                }
+            },
+            partner2: { // Disorganized
+                selfSoothing: {
+                    en: "Silence is not abandonment.",
+                    hinglish: "Khamoshi ka matlab chhodna nahi hota."
+                },
+                boundary: {
+                    en: "Please say something. Your silence scares me.",
+                    hinglish: "Kuch to bolo. Tumhari chuppi darati hai."
+                },
+                repair: {
+                    en: "I pushed for a reaction because I was scared.",
+                    hinglish: "Maine reaction ke liye uksaya kyunki main darr gaya tha."
+                },
+                reassurance: {
+                    en: "I respect your space. I'll wait.",
+                    hinglish: "Main tumhare space ki izzat karta hoon. Main intezaar karunga."
+                }
+            }
+        },
     },
 
     'disorganized-disorganized': {
@@ -674,6 +1029,44 @@ export const pairingAnalyses: Record<PairingKey, PairingAnalysis> = {
             "Chhoti khushiyon aur shanti ke palon ko celebrate karna",
             "Agar dono chahein to sabse gehri healing ho sakti hai",
         ],
+        conflictScripts: {
+            partner1: { // Disorganized
+                selfSoothing: {
+                    en: "We are triggering each other's trauma. Time out.",
+                    hinglish: "Hum ek doosre ke ghaav kureed rahe hain. Time out."
+                },
+                boundary: {
+                    en: "This is becoming toxic. We need to stop now.",
+                    hinglish: "Ye zehreela ho raha hai. Abhi rukna hoga."
+                },
+                repair: {
+                    en: "That wasn't me, that was my trauma. I'm sorry.",
+                    hinglish: "Wo main nahi tha, wo mera trauma tha. Sorry."
+                },
+                reassurance: {
+                    en: "We are both safe. We are not our past.",
+                    hinglish: "Hum dono safe hain. Hum humara ateet nahi hain."
+                }
+            },
+            partner2: { // Disorganized
+                selfSoothing: {
+                    en: "I can choose a different response.",
+                    hinglish: "Main alag tarah se react kar sakta hoon."
+                },
+                boundary: {
+                    en: "I need to step away to protect us.",
+                    hinglish: "Humare liye mujhe hatna padega."
+                },
+                repair: {
+                    en: "I want to heal with you, not fight.",
+                    hinglish: "Main tumhare saath theek hona chahta hoon, ladna nahi."
+                },
+                reassurance: {
+                    en: "We can build a safe life together.",
+                    hinglish: "Hum saath safe zindagi bana sakte hain."
+                }
+            }
+        },
     },
 };
 export interface Strategy {

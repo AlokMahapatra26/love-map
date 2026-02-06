@@ -514,7 +514,7 @@ export const conflictStories: Record<string, ConflictStory[]> = {
             title: "The Misunderstanding",
             story: "[Partner1] forgets to complete an important errand they promised earlier in the week. [Partner2] feels irritated and slightly hurt because they were relying on it. However, instead of attacking [Partner1]'s personality, they calmly explain, 'I felt stressed when this didn’t happen because I was counting on you.' [Partner1] listens without becoming defensive, acknowledges the mistake, apologizes sincerely, and asks how they can repair the situation. They work together to fix the problem and feel closer because they handled conflict respectfully.",
             titleHinglish: "Galatfehmi",
-            storyHinglish: "[Partner1] ek important kaam bhool jaate hain jo unhone pehle promise kiya tha. [Partner2] thoda irritate aur hurt feel karte hain kyunki wo us kaam par depend kar rahe the. Par [Partner2] character attack nahi karte, balki shaanti se kehte hain, 'Mujhe stress feel hua jab ye kaam nahi hua, kyunki main tum par depend kar raha/rahi tha.' [Partner1] bina defensive hue sunte hain, apni galti accept karte hain aur sincerely sorry bolte hain. Dono milkar problem solve karte hain aur emotionally aur close feel karte hain."
+            storyHinglish: "[Partner1] ek important kaam bhool jaate hain jo unhone pehle promise kiya tha. [Partner2] thoda irritate aur hurt feel karte hain kyunki wo us kaam par depend kar rahe the. Par [Partner2] character attack nahi karte, balki shaanti se kehte hain, 'Mujhe stress feel hua jab ye kaam nahi hua, kyunki main tum par depend kar raha/rahi tha/thi.' [Partner1] bina defensive hue sunte hain, apni galti accept karte hain aur sincerely sorry bolte hain. Dono milkar problem solve karte hain aur emotionally aur close feel karte hain."
         },
         {
             title: "The Bad Day",
@@ -627,8 +627,6 @@ export const conflictStories: Record<string, ConflictStory[]> = {
             storyHinglish: "[Partner2] ek chhoti galti ke baad baar baar maafi mangte hain kyunki unhe chhod diye jaane ka darr hota hai. [Partner1] reassurance dete hain ki healthy relationship mein mistakes normal hoti hain. Wo pyaar se respond karte hain, jisse [Partner2] dheere dheere fear-based patterns chhodna seekhte hain."
         }
     ],
-
-
     'secure-avoidant': [
         {
             title: "The Talk",
@@ -694,8 +692,6 @@ export const conflictStories: Record<string, ConflictStory[]> = {
             storyHinglish: "[Partner2] ek chhoti emotional baat share karte hain jo unke liye internally bahut badi hoti hai. [Partner1] warm response dete hain aur trust ke liye appreciation dikhate hain. Yeh positive response [Partner2] ko emotional sharing mein comfortable banata hai."
         }
     ],
-
-
     'secure-disorganized': [
         {
             title: "The Push-Pull",
@@ -824,7 +820,6 @@ export const conflictStories: Record<string, ConflictStory[]> = {
             storyHinglish: "Travel ya distance mein wo bahut zyada calls karte hain fear ki wajah se. Dheere dheere frequency kam aur conversation quality better karne se trust build hota hai."
         }
     ],
-
     'anxious-avoidant': [
         {
             title: "The Chase Cycle",
@@ -887,8 +882,6 @@ export const conflictStories: Record<string, ConflictStory[]> = {
             storyHinglish: "[Partner2] conflict mein room chhodne ke bajaye present rehta hai. [Partner1] bhi emotional intensity kam karta hai. Yeh chhota step trust build karne mein powerful ban jata hai."
         }
     ],
-
-
     'anxious-disorganized': [
         {
             title: "The Emotional Minefield",
@@ -990,8 +983,6 @@ export const conflictStories: Record<string, ConflictStory[]> = {
             storyHinglish: "Baatein sirf routine aur tasks tak limited rehti hain. Deeper emotional questions poochna connection strong karta hai."
         }
     ],
-
-
     'avoidant-disorganized': [
         {
             title: "False Emotional Calm",

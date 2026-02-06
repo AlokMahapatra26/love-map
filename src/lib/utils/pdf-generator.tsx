@@ -59,7 +59,20 @@ const pdfTranslations = {
         onSameTeam: "When you see this happening, take a deep breath. Remind yourself: \"My partner is struggling right now, and so am I. We are on the same team.\"",
         conclusion: "Please don't see every conflict as a \"red flag\" or a reason to break up.\nReal love isn't about never fighting; it's about repairing the rupture.\n\nBe calm. Understand each other. Fix it together.\n\nYou have everything you need to make this work.",
         quesRecord: "Questionnaire Ke Jawab",
-        quesIntro: "Is document mein relationship assessment ke saare sawal aur jawab darj hain."
+        quesIntro: "Is document mein relationship assessment ke saare sawal aur jawab darj hain.",
+        fightScriptsTitle: "What To Do During a Fight",
+        scriptsSubtitle: "Ready-to-Use 2-Line Scripts",
+        selfSoothing: "Self-Soothing (Say to yourself)",
+        boundary: "Setting Boundaries",
+        repair: "Repair Attempt",
+        reassurance: "Reassurance",
+        scriptsFor: (name: string) => `${name}'s Scripts`,
+        deepAnalysisTitle: "Deep Analysis",
+        deepAnalysisSubtitle: "Strengths, Risks & Growth",
+        strengthsTitle: "Your Unique Strengths",
+        risksTitle: "Risk Factors to Watch",
+        conflictsTitle: "Common Conflict Loops",
+        growthTitle: "Growth Opportunities",
     },
     hinglish: {
         coverTitle: "Humari Love Story",
@@ -99,7 +112,20 @@ const pdfTranslations = {
         onSameTeam: "When you see this happening, take a deep breath. Remind yourself: \"My partner is struggling right now, and so am I. We are on the same team.\"",
         conclusion: "Har jhagde ko \"red flag\" ya breakup ka reason na samjhein.\nAsli pyaar wo nahi jisme jhagde na hon; wo hai jisme tootne ke baad judna aata ho.\n\nShant rahein. Samajhein. Saath mein theek karein.\n\nAapke paas wo sab hai jo is rishte ko safal banane ke liye chahiye.",
         quesRecord: "Questionnaire Ke Jawab",
-        quesIntro: "Is document mein relationship assessment ke saare sawal aur jawab darj hain."
+        quesIntro: "Is document mein relationship assessment ke saare sawal aur jawab darj hain.",
+        fightScriptsTitle: "Ladai ke dauraan kya karein",
+        scriptsSubtitle: "Bane-banaye jawaab (Scripts)",
+        selfSoothing: "Khud ko shant karna (Man mein bolein)",
+        boundary: "Hadd tay karna (Boundary banana)",
+        repair: "Sulhah ki koshish (Repair)",
+        reassurance: "Tasalli dena (Reassurance)",
+        scriptsFor: (name: string) => `${name} ke liye Scripts`,
+        deepAnalysisTitle: "Gehra Visleshan (Deep Analysis)",
+        deepAnalysisSubtitle: "Taaqat, Khatre aur Mauke",
+        strengthsTitle: "Aapki Khaas Taaqat (Strengths)",
+        risksTitle: "In Cheezon Se Bachein (Risks)",
+        conflictsTitle: "Aksar Hone Wale Jhagde (Conflicts)",
+        growthTitle: "Saath Badhne Ke Mauke (Growth)",
     }
 };
 
@@ -222,7 +248,7 @@ const RelationshipReport = ({ partner1, partner2, language = 'en', useInitials =
         storyChunks.push(personalizedStories.slice(i, i + storiesPerPage));
     }
 
-    const totalPages = partner2 ? (3 + storyChunks.length) : 3;
+    const totalPages = partner2 ? (5 + storyChunks.length) : 3;
 
     return (
         <Document>
@@ -412,6 +438,123 @@ const RelationshipReport = ({ partner1, partner2, language = 'en', useInitials =
                 </Page>
             )}
 
+            {/* Fight Scripts Page */}
+            {partner2 && pairingAnalysis && pairingAnalysis.conflictScripts && (
+                <Page size="A4" style={styles.page}>
+                    <View style={styles.header}>
+                        <Text style={styles.headerTitle}>{t.fightScriptsTitle}</Text>
+                        <Text style={styles.headerMeta}>{t.scriptsSubtitle}</Text>
+                    </View>
+
+                    <View style={styles.section}>
+                        <Text style={styles.text}>{t.scriptsSubtitle}</Text>
+
+                        {/* Logic to determine which scripts belong to which partner */}
+                        {(() => {
+                            const isStandardOrder = pairingKey === `${style1}-${style2}`;
+                            // if standard: P1 (PDF) -> Partner1 (Data), P2 (PDF) -> Partner2 (Data)
+                            // if swapped: P1 (PDF) -> Partner2 (Data), P2 (PDF) -> Partner1 (Data)
+
+                            const p1Scripts = isStandardOrder ? pairingAnalysis.conflictScripts?.partner1 : pairingAnalysis.conflictScripts?.partner2;
+                            const p2Scripts = isStandardOrder ? pairingAnalysis.conflictScripts?.partner2 : pairingAnalysis.conflictScripts?.partner1;
+
+                            // Helper to render a partner's block
+                            const renderScripts = (name: string, scripts: any) => (
+                                <View style={styles.highlightBox}>
+                                    <Text style={styles.subTitle}>{t.scriptsFor(name)}</Text>
+
+                                    <Text style={[styles.italicText, { fontSize: 10, color: '#BE123C' }]}>{t.selfSoothing}</Text>
+                                    <Text style={styles.text}>"{language === 'hinglish' ? scripts.selfSoothing.hinglish : scripts.selfSoothing.en}"</Text>
+
+                                    <Text style={[styles.italicText, { fontSize: 10, color: '#BE123C' }]}>{t.boundary}</Text>
+                                    <Text style={styles.text}>"{language === 'hinglish' ? scripts.boundary.hinglish : scripts.boundary.en}"</Text>
+
+                                    <Text style={[styles.italicText, { fontSize: 10, color: '#BE123C' }]}>{t.repair}</Text>
+                                    <Text style={styles.text}>"{language === 'hinglish' ? scripts.repair.hinglish : scripts.repair.en}"</Text>
+
+                                    <Text style={[styles.italicText, { fontSize: 10, color: '#BE123C' }]}>{t.reassurance}</Text>
+                                    <Text style={styles.text}>"{language === 'hinglish' ? scripts.reassurance.hinglish : scripts.reassurance.en}"</Text>
+                                </View>
+                            );
+
+                            return (
+                                <>
+                                    {p1Scripts && renderScripts(name1, p1Scripts)}
+                                    {p2Scripts && renderScripts(name2, p2Scripts)}
+                                </>
+                            );
+                        })()}
+                    </View>
+
+                    <View style={styles.footer}>
+                        <Text style={styles.footerText}>{t.madeWithLove} {name1} & {name2}</Text>
+                        <Text style={styles.footerText}>Page 4 of {totalPages}</Text>
+                    </View>
+                </Page>
+            )}
+
+            {/* Deep Analysis Page */}
+            {partner2 && pairingAnalysis && (
+                <Page size="A4" style={styles.page}>
+                    <View style={styles.header}>
+                        <Text style={styles.headerTitle}>{t.deepAnalysisTitle}</Text>
+                        <Text style={styles.headerMeta}>{t.deepAnalysisSubtitle}</Text>
+                    </View>
+
+                    <View style={styles.section}>
+                        <View style={styles.highlightBox}>
+                            <Text style={styles.subTitle}>{t.strengthsTitle}</Text>
+                            {/* Use Hinglish if selected, fallback to English */}
+                            <Text style={styles.text}>
+                                {toNarrative(
+                                    (language === 'hinglish' && pairingAnalysis.strengthsHinglish)
+                                        ? pairingAnalysis.strengthsHinglish
+                                        : pairingAnalysis.strengths,
+                                    ""
+                                )}
+                            </Text>
+                        </View>
+
+                        <View style={styles.highlightBox}>
+                            <Text style={styles.subTitle}>{t.risksTitle}</Text>
+                            <Text style={styles.text}>
+                                {toNarrative(
+                                    (language === 'hinglish' && pairingAnalysis.riskFactorsHinglish)
+                                        ? pairingAnalysis.riskFactorsHinglish
+                                        : pairingAnalysis.riskFactors,
+                                    ""
+                                )}
+                            </Text>
+                        </View>
+
+                        <Text style={styles.sectionTitle}>{t.conflictsTitle}</Text>
+                        <Text style={styles.text}>
+                            {toNarrative(
+                                (language === 'hinglish' && pairingAnalysis.keyConflictsHinglish)
+                                    ? pairingAnalysis.keyConflictsHinglish
+                                    : pairingAnalysis.keyConflicts,
+                                ""
+                            )}
+                        </Text>
+
+                        <Text style={styles.sectionTitle}>{t.growthTitle}</Text>
+                        <Text style={styles.text}>
+                            {toNarrative(
+                                (language === 'hinglish' && pairingAnalysis.growthOpportunitiesHinglish)
+                                    ? pairingAnalysis.growthOpportunitiesHinglish
+                                    : pairingAnalysis.growthOpportunities,
+                                ""
+                            )}
+                        </Text>
+                    </View>
+
+                    <View style={styles.footer}>
+                        <Text style={styles.footerText}>{t.madeWithLove} {name1} & {name2}</Text>
+                        <Text style={styles.footerText}>Page 5 of {totalPages}</Text>
+                    </View>
+                </Page>
+            )}
+
             {/* Real World Perspective Pages (Chunked) */}
             {partner2 && styleInfo2 && storyChunks.map((chunk, chunkIndex) => (
                 <Page key={chunkIndex} size="A4" style={styles.page}>
@@ -460,7 +603,7 @@ const RelationshipReport = ({ partner1, partner2, language = 'en', useInitials =
 
                     <View style={styles.footer}>
                         <Text style={styles.footerText}>{t.madeWithLove} {name1} & {name2}</Text>
-                        <Text style={styles.footerText}>Page {4 + chunkIndex} of {totalPages}</Text>
+                        <Text style={styles.footerText}>Page {6 + chunkIndex} of {totalPages}</Text>
                     </View>
                 </Page>
             ))}

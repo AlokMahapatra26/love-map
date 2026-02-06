@@ -387,7 +387,10 @@ function ResultsContent() {
                                     disabled={generatingPdf}
                                     className="btn-clinical text-xs py-2 px-5 whitespace-nowrap"
                                 >
-                                    {generatingPdf ? t('results.processing') : 'Unlock Full Report ($7.99)'}
+                                    {generatingPdf
+                                        ? t('results.processing')
+                                        : (partner1.hasPaid ? 'Download PDF' : 'Unlock Full Report ($7.99)')
+                                    }
                                 </button>
                             </div>
                         )
@@ -467,6 +470,28 @@ function ResultsContent() {
                                     Unlock Now ($7.99) <ArrowRight className="w-5 h-5 ml-2" />
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {partner1 && partner2 && partner1.hasPaid && (
+                    <div className="mb-12 bg-white rounded-2xl p-8 border border-rose-100 shadow-lg relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-rose-50 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div>
+                                <h2 className="text-2xl font-serif font-bold text-rose-900 mb-2">
+                                    Your Relationship Analysis is Ready
+                                </h2>
+                                <p className="text-stone-600">
+                                    Your full deep-dive report, including conflict resolution scripts and personalized growth plans, is available for download.
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowDownloadOptions(true)}
+                                className="w-full md:w-auto btn-clinical text-lg px-8 py-3 shadow-md whitespace-nowrap"
+                            >
+                                Download PDF <ArrowRight className="w-5 h-5 ml-2" />
+                            </button>
                         </div>
                     </div>
                 )}
@@ -586,33 +611,14 @@ function ResultsContent() {
                                 </div>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-8">
-                                <div className="report-card bg-white border-rose-100 shadow-lg">
-                                    <h3 className="font-bold text-sm uppercase tracking-wide mb-6 flex items-center gap-2 text-rose-800">
-                                        <AlertCircle className="w-4 h-4 text-rose-500" /> {t('results.challenges')}
-                                    </h3>
-                                    <ul className="space-y-4">
-                                        {pairingAnalysis.keyConflicts.map((conflict, i) => (
-                                            <li key={i} className="flex gap-4 text-sm text-stone-700 font-serif">
-                                                <span className="font-mono text-rose-300 text-xs pt-1">{String(i + 1).padStart(2, '0')}</span>
-                                                {conflict}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                <div className="report-card bg-white border-rose-100 shadow-lg">
-                                    <h3 className="font-bold text-sm uppercase tracking-wide mb-6 flex items-center gap-2 text-rose-800">
-                                        <Target className="w-4 h-4 text-rose-500" /> {t('results.opportunities')}
-                                    </h3>
-                                    <ul className="space-y-4">
-                                        {pairingAnalysis.growthOpportunities.map((opportunity, i) => (
-                                            <li key={i} className="flex gap-4 text-sm text-stone-700 font-serif">
-                                                <span className="font-mono text-rose-300 text-xs pt-1">{String(i + 1).padStart(2, '0')}</span>
-                                                {opportunity}
-                                            </li>
-                                        ))}
-                                    </ul>
+                            <div className="report-card border-dashed border-rose-200 flex items-center justify-center text-rose-300 py-12 bg-rose-50/50">
+                                <div className="text-center">
+                                    <div className="text-sm font-serif text-stone-600 mb-2">
+                                        {language === 'hinglish' ? "Poori report PDF mein dekhein" : "Unlock full analysis in PDF"}
+                                    </div>
+                                    <span className="text-xs font-mono uppercase tracking-widest opacity-50">
+                                        {language === 'hinglish' ? "Deep Analysis Available" : "Deep Analysis Available"}
+                                    </span>
                                 </div>
                             </div>
                         </div>
